@@ -1,0 +1,1 @@
+A full-stack budgeting application for personal finance management, featuring transaction tracking, budget planning, category management, analytics, and financial reporting.
