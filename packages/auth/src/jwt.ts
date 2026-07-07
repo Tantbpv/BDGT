@@ -1,5 +1,5 @@
-import { SignJWT, jwtVerify, type JWTPayload } from 'jose';
 import type { TokenPayload } from '@repo/contracts/auth';
+import { type JWTPayload,jwtVerify, SignJWT } from 'jose';
 
 export type AccessTokenPayload = TokenPayload;
 export type RefreshTokenPayload = { sub: string };

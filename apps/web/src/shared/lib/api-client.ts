@@ -1,26 +1,30 @@
 import type { ApiError } from '@repo/contracts/common';
 
 export class ApiClientError extends Error {
+  readonly code: string;
+  readonly status: number;
+  readonly details?: unknown;
+
   constructor(
     message: string,
-    public readonly code: string,
-    public readonly status: number,
-    public readonly details?: unknown,
+    { code, status, details }: { code: string; status: number; details?: unknown },
   ) {
     super(message);
     this.name = 'ApiClientError';
+    this.code = code;
+    this.status = status;
+    this.details = details;
   }
 }
 
 async function handleResponse<T>(response: Response): Promise<T> {
   const data = (await response.json()) as { data?: T } & ApiError;
   if (!response.ok) {
-    throw new ApiClientError(
-      data.error.message,
-      data.error.code,
-      response.status,
-      data.error.details,
-    );
+    throw new ApiClientError(data.error.message, {
+      code: data.error.code,
+      status: response.status,
+      details: data.error.details,
+    });
   }
   return data.data as T;
 }

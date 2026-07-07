@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { RegisterRequestSchema, type AuthResponse } from '@repo/contracts/auth';
-import type { ApiResponse, ApiError } from '@repo/contracts/common';
+import { type AuthResponse,RegisterRequestSchema } from '@repo/contracts/auth';
+import type { ApiError,ApiResponse } from '@repo/contracts/common';
+import { type NextRequest, NextResponse } from 'next/server';
 
 export async function POST(
   request: NextRequest,

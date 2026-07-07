@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
 import { REFRESH_TOKEN_COOKIE } from '@repo/auth';
+import { type NextRequest, NextResponse } from 'next/server';
 
 export async function DELETE(request: NextRequest): Promise<NextResponse> {
   const refreshToken = request.cookies.get(REFRESH_TOKEN_COOKIE)?.value;

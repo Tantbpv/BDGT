@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { ApiError,ApiResponse } from '@repo/contracts/common';
 import { UpdateUserSchema, type User } from '@repo/contracts/users';
-import type { ApiResponse, ApiError } from '@repo/contracts/common';
+import { type NextRequest, NextResponse } from 'next/server';
 
 export async function GET(
   _request: NextRequest,

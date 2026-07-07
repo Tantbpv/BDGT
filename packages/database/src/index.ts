@@ -1,12 +1,12 @@
 export { prisma } from './client';
-export { Prisma, PrismaClient } from '@prisma/client';
 export type {
-  User,
-  UserSetting,
+  Account,
+  Category,
+  RefreshToken,
   Transaction,
   TransactionType,
-  Category,
-  Account,
+  User,
   UserAccount,
-  RefreshToken,
+  UserSetting,
 } from '@prisma/client';
+export { Prisma, PrismaClient } from '@prisma/client';

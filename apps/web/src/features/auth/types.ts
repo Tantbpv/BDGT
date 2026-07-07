@@ -1,1 +1,1 @@
-export type { LoginRequest, RegisterRequest, AuthResponse, TokenPayload } from '@repo/contracts/auth';
+export type { AuthResponse, LoginRequest, RegisterRequest, TokenPayload } from '@repo/contracts/auth';

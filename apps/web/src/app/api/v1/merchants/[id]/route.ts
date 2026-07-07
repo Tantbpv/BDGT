@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { UpdateMerchantSchema, type Merchant } from '@repo/contracts/merchants';
-import type { ApiResponse, ApiError } from '@repo/contracts/common';
+import type { ApiError,ApiResponse } from '@repo/contracts/common';
+import { type Merchant,UpdateMerchantSchema } from '@repo/contracts/merchants';
+import { type NextRequest, NextResponse } from 'next/server';
 
 type RouteParams = { params: Promise<{ id: string }> };
 

@@ -1,1 +1,1 @@
-export type { Merchant, CreateMerchant, UpdateMerchant } from '@repo/contracts/merchants';
+export type { CreateMerchant, Merchant, UpdateMerchant } from '@repo/contracts/merchants';

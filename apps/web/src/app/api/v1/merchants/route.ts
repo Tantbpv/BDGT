@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { ApiError,ApiResponse } from '@repo/contracts/common';
 import { CreateMerchantSchema, type Merchant } from '@repo/contracts/merchants';
-import type { ApiResponse, ApiError } from '@repo/contracts/common';
+import { type NextRequest, NextResponse } from 'next/server';
 
 export async function GET(
   _request: NextRequest,

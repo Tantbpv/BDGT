@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { CreateCategorySchema, type Category } from '@repo/contracts/categories';
-import type { ApiResponse, ApiError } from '@repo/contracts/common';
+import { type Category,CreateCategorySchema } from '@repo/contracts/categories';
+import type { ApiError,ApiResponse } from '@repo/contracts/common';
+import { type NextRequest, NextResponse } from 'next/server';
 
 export async function GET(
   _request: NextRequest,
