@@ -1,0 +1,27 @@
+{
+  "name": "@repo/contracts",
+  "version": "0.0.1",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts",
+    "./common": "./src/common/index.ts",
+    "./auth": "./src/auth/index.ts",
+    "./transactions": "./src/transactions/index.ts",
+    "./categories": "./src/categories/index.ts",
+    "./merchants": "./src/merchants/index.ts",
+    "./users": "./src/users/index.ts"
+  },
+  "scripts": {
+    "type-check": "tsc --noEmit",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/tsconfig": "workspace:*",
+    "eslint": "^9.20.0",
+    "typescript": "^5.8.3"
+  }
+}

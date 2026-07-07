@@ -1,0 +1,29 @@
+{
+  "name": "@repo/database",
+  "version": "0.0.1",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "db:generate": "dotenv -e ../../.env -- prisma generate",
+    "db:migrate": "dotenv -e ../../.env -- prisma migrate dev",
+    "db:push": "dotenv -e ../../.env -- prisma db push",
+    "db:seed": "dotenv -e ../../.env -- ts-node --project tsconfig.seed.json seed.ts",
+    "db:studio": "dotenv -e ../../.env -- prisma studio",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@prisma/client": "^6.9.0"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/tsconfig": "workspace:*",
+    "@types/node": "^22.0.0",
+    "eslint": "^9.20.0",
+    "prisma": "^6.9.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "name": "@repo/web",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "dotenv -e ../../.env -- next dev --turbopack",
+    "build": "dotenv -e ../../.env -- next build",
+    "start": "dotenv -e ../../.env -- next start",
+    "lint": "next lint",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@repo/auth": "workspace:*",
+    "@repo/config": "workspace:*",
+    "@repo/contracts": "workspace:*",
+    "@repo/database": "workspace:*",
+    "@repo/logger": "workspace:*",
+    "@repo/ui": "workspace:*",
+    "@repo/utils": "workspace:*",
+    "bcryptjs": "^2.4.3",
+    "next": "^15.3.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/tsconfig": "workspace:*",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "eslint": "^9.20.0",
+    "eslint-config-next": "^15.3.0",
+    "typescript": "^5.8.3"
+  }
+}

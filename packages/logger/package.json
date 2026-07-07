@@ -1,0 +1,22 @@
+{
+  "name": "@repo/logger",
+  "version": "0.0.1",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "type-check": "tsc --noEmit",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "pino": "^9.6.0"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/tsconfig": "workspace:*",
+    "@types/node": "^22.0.0",
+    "eslint": "^9.20.0",
+    "typescript": "^5.8.3"
+  }
+}

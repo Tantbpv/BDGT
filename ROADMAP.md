@@ -15,4 +15,5 @@ Post MVP stage:
 - Prisma ORM as a separate shared service/package
 - Add Dashboards with budget statistics for week, month, YTD and custom range. Use D3.js for visualization.
 - Add Assistance service with AI API integration. Add Analytic page with forecasts and budget analytics (regular/unregular spending, cost optimization, budgeting, etc.)
-- Improve AWS infrastructure an deploy process
+- Improve AWS infrastructure and deploy process
+- Account management and shared accounts

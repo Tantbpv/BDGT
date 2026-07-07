@@ -1,0 +1,9 @@
+{
+  "extends": "@repo/tsconfig/library.json",
+  "compilerOptions": {
+    "module": "CommonJS",
+    "moduleResolution": "Node10"
+  },
+  "include": ["seed.ts"],
+  "exclude": ["node_modules"]
+}
