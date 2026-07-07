@@ -6,7 +6,7 @@
     "dev": "dotenv -e ../../.env -- next dev --turbopack",
     "build": "dotenv -e ../../.env -- next build",
     "start": "dotenv -e ../../.env -- next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
@@ -23,6 +23,7 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "@next/eslint-plugin-next": "^15.3.0",
     "@repo/eslint-config": "workspace:*",
     "@repo/tsconfig": "workspace:*",
     "@types/bcryptjs": "^2.4.6",
