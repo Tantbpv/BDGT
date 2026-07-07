@@ -6,35 +6,149 @@ on:
   pull_request:
     branches: [master]
 
-jobs:
-  ci:
-    name: CI
-    runs-on: ubuntu-latest
+env:
+  DATABASE_URL: postgresql://bdgt:bdgt_password@localhost:5432/bdgt
+  JWT_ACCESS_SECRET: ci-secret-access-min-32-chars-aaaaaaaaa
+  JWT_REFRESH_SECRET: ci-secret-refresh-min-32-chars-bbbbbbbbb
 
+jobs:
+  dependencies:
+    name: Dependencies
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
       - uses: pnpm/action-setup@v4
-        with:
-          version: 9
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
           cache: "pnpm"
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Type check
-        run: pnpm type-check
+      - name: Generate Prisma client
+        run: pnpm db:generate
+
+      - name: Cache node_modules
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            node_modules
+            apps/*/node_modules
+            packages/*/node_modules
+          key: node-modules-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+  lint:
+    name: Lint
+    needs: dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "pnpm"
+
+      - name: Restore node_modules
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            node_modules
+            apps/*/node_modules
+            packages/*/node_modules
+          key: node-modules-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
 
       - name: Lint
         run: pnpm lint
 
+  type-check:
+    name: Type Check
+    needs: dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "pnpm"
+
+      - name: Restore node_modules
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            node_modules
+            apps/*/node_modules
+            packages/*/node_modules
+          key: node-modules-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+      - name: Type check
+        run: pnpm type-check
+
+  test:
+    name: Test
+    needs: [lint, type-check]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "pnpm"
+
+      - name: Restore node_modules
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            node_modules
+            apps/*/node_modules
+            packages/*/node_modules
+          key: node-modules-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+      - name: Test
+        run: pnpm test
+
+  build:
+    name: Build
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "pnpm"
+
+      - name: Restore node_modules
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            node_modules
+            apps/*/node_modules
+            packages/*/node_modules
+          key: node-modules-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+
       - name: Build
         run: pnpm build
-        env:
-          DATABASE_URL: postgresql://bdgt:bdgt_password@localhost:5432/bdgt
-          JWT_ACCESS_SECRET: ci-secret-access-min-32-chars-aaaaaaaaa
-          JWT_REFRESH_SECRET: ci-secret-refresh-min-32-chars-bbbbbbbbb
+
+  deploy:
+    name: Deploy
+    needs: build
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Deploy (mock)
+        run: echo "Deploying to production — approval granted."
