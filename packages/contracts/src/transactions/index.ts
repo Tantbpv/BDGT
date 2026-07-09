@@ -11,7 +11,6 @@ export const TransactionSchema = z.object({
   date: z.string().datetime(),
   userId: z.string(),
   categoryId: z.string().nullable(),
-  merchantId: z.string().nullable(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
 });
@@ -24,7 +23,6 @@ export const CreateTransactionSchema = z.object({
   type: TransactionTypeSchema,
   date: z.string().datetime(),
   categoryId: z.string().optional().nullable(),
-  merchantId: z.string().optional().nullable(),
 });
 
 export type CreateTransaction = z.infer<typeof CreateTransactionSchema>;
@@ -37,7 +35,6 @@ export const TransactionListQuerySchema = z.object({
   limit: z.coerce.number().int().positive().max(100).default(20),
   type: TransactionTypeSchema.optional(),
   categoryId: z.string().optional(),
-  merchantId: z.string().optional(),
   from: z.string().datetime().optional(),
   to: z.string().datetime().optional(),
 });
