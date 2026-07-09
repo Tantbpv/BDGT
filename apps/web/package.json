@@ -3,13 +3,16 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "dev": "dotenv -e ../../.env -- next dev --turbopack",
+    "dev": "dotenv -e ../../.env -- next dev",
     "build": "dotenv -e ../../.env -- next build",
     "start": "dotenv -e ../../.env -- next start",
     "lint": "eslint . --fix",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@prisma/adapter-pg": "^7.8.0",
+    "@prisma/client": "^7.8.0",
+    "pg": "^8.13.0",
     "@repo/auth": "workspace:*",
     "@repo/config": "workspace:*",
     "@repo/contracts": "workspace:*",
@@ -18,12 +21,12 @@
     "@repo/ui": "workspace:*",
     "@repo/utils": "workspace:*",
     "bcryptjs": "^2.4.3",
-    "next": "^15.3.0",
+    "next": "^16.2.10",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "@next/eslint-plugin-next": "^15.3.0",
+    "@next/eslint-plugin-next": "^16.2.10",
     "@repo/eslint-config": "workspace:*",
     "@repo/tsconfig": "workspace:*",
     "@types/bcryptjs": "^2.4.6",
@@ -31,7 +34,7 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "eslint": "^9.20.0",
-    "eslint-config-next": "^15.3.0",
+    "eslint-config-next": "^16.2.10",
     "typescript": "^5.8.3"
   }
 }

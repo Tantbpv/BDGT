@@ -1,0 +1,37 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cat:*)",
+      "Bash(find:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npx markdownlint:*)",
+      "Bash(claude plugin install:*)",
+      "Bash(claude plugin:*)",
+      "Bash(ls:*)",
+      "Bash(chmod:*)",
+      "Bash(bash \"$SETUP_SCRIPT\")",
+      "Bash(bash:*)",
+      "Bash(./install-submodules.sh:*)",
+      "Bash(git submodule:*)",
+      "Bash(git reset:*)",
+      "Bash(git restore:*)",
+      "Bash(git rm:*)",
+      "Bash(gh pr list:*)",
+      "Bash(git fetch:*)",
+      "Bash(pnpm typecheck:*)",
+      "Bash(pnpm run:*)",
+      "Bash(pnpm test:*)",
+      "Bash(pnpm list:*)",
+      "Bash(pnpm install:*)",
+      "Bash(pnpm ls:*)",
+      "Bash(pnpm lint:*)",
+      "Bash(pnpm lint:fix:*)",
+      "Bash(pnpm vitest:*)",
+      "Bash(grep:*)",
+      "Bash(claude mcp:*)",
+      "Bash(pnpm exec:*)",
+      "Bash(npx vitest:*)",
+      "Read(//tmp/**)"
+    ]
+  }
+}

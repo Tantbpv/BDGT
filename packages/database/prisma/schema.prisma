@@ -9,15 +9,16 @@ datasource db {
 // ─── User ──────────────────────────────────────────────────────────────────────
 
 model User {
-  id            String         @id @default(cuid())
-  email         String         @unique
-  passwordHash  String
-  name          String?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt @default(now())
-  accounts      UserAccount[]
-  settings      UserSetting?
-  refreshTokens RefreshToken[]
+  id                  String                @id @default(cuid())
+  email               String                @unique
+  passwordHash        String
+  name                String?
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt @default(now())
+  accounts            UserAccount[]
+  settings            UserSetting?
+  refreshTokens       RefreshToken[]
+  passwordResetTokens PasswordResetToken[]
 }
 
 model UserSetting {
@@ -37,6 +38,18 @@ model RefreshToken {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   expiresAt DateTime
   createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  token     String    @unique
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
 
   @@index([userId])
 }

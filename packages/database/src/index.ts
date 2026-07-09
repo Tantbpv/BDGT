@@ -2,6 +2,7 @@ export { prisma } from './client';
 export type {
   Account,
   Category,
+  PasswordResetToken,
   RefreshToken,
   Transaction,
   TransactionType,

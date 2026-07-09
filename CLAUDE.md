@@ -50,7 +50,7 @@ packages/
 ### apps/web internals
 
 - **`src/app/(auth)/`** — unauthenticated routes: `/login`, `/register`
-- **`src/app/(app)/`** — authenticated routes: `/dashboard`, `/transactions`, `/transactions/[id]`, `/labels`, `/settings`
+- **`src/app/(private)/`** — authenticated routes: `/dashboard`, `/transactions`, `/transactions/[id]`, `/labels`, `/settings`
 - **`src/app/api/v1/`** — Next.js Route Handlers acting as the MVP API gateway. Auth, transactions, categories, and users endpoints are scaffolded with Zod validation but **all return `501 NOT_IMPLEMENTED`** — business logic is the next implementation milestone.
 - **`src/features/`** — thin domain modules that re-export from `@repo/contracts`; `dashboard/types.ts` has a local `DashboardStats` type not yet in contracts.
 - **`src/shared/lib/api-client.ts`** — base fetch wrapper (`apiGet`, `apiPost`, etc.) with `ApiClientError`.

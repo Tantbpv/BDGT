@@ -1,0 +1,6 @@
+{
+  "name": "@repo/postman",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Postman collections for BDGT API"
+}

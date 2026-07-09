@@ -1,0 +1,521 @@
+{
+  "info": {
+    "name": "BDGT API",
+    "_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "description": "BDGT personal finance API. Set `baseUrl` to your server (default: http://localhost:3000/api/v1). After Register or Login the `accessToken` collection variable is saved automatically.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string",
+      "description": "JWT access token. Populated automatically by Register / Login."
+    },
+    {
+      "key": "resetToken",
+      "value": "",
+      "type": "string",
+      "description": "Password reset token. Populated automatically by Forgot Password (dev mode only)."
+    },
+    {
+      "key": "categoryId",
+      "value": "",
+      "type": "string",
+      "description": "Category ID for single-resource requests."
+    },
+    {
+      "key": "transactionId",
+      "value": "",
+      "type": "string",
+      "description": "Transaction ID for single-resource requests."
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.accessToken) {",
+                  "  pm.collectionVariables.set('accessToken', res.data.accessToken);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\",\n  \"name\": \"John Doe\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
+            },
+            "description": "Create a new user account. On success: sets `accessToken` collection variable and returns a `bdgt_refresh_token` HTTP-only cookie."
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.accessToken) {",
+                  "  pm.collectionVariables.set('accessToken', res.data.accessToken);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Authenticate with email and password. On success: sets `accessToken` collection variable and returns a `bdgt_refresh_token` HTTP-only cookie."
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/refresh",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "refresh"]
+            },
+            "description": "Issue a new access token using the `bdgt_refresh_token` HTTP-only cookie. The old refresh token is rotated (deleted and replaced). Postman Desktop sends cookies automatically if cookie management is enabled."
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "logout"]
+            },
+            "description": "Invalidate the current refresh token in the database and clear the `bdgt_refresh_token` cookie."
+          }
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"password123\",\n  \"newPassword\": \"newpassword456\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/change-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "change-password"]
+            },
+            "description": "Change the authenticated user's password. Requires a valid access token. Invalidates all existing refresh tokens (forces re-login on all devices)."
+          }
+        },
+        {
+          "name": "Forgot Password",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.resetToken) {",
+                  "  pm.collectionVariables.set('resetToken', res.data.resetToken);",
+                  "  console.log('Reset token saved:', res.data.resetToken);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/forgot-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "forgot-password"]
+            },
+            "description": "Request a password reset token. Always returns 200 regardless of whether the email exists (prevents email enumeration). In development mode: returns the token in the response body and saves it to the `resetToken` collection variable. In production: returns null and would send an email."
+          }
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"{{resetToken}}\",\n  \"newPassword\": \"newpassword456\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/reset-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "reset-password"]
+            },
+            "description": "Reset password using a token from Forgot Password. Tokens are single-use and expire after 1 hour. Invalidates all existing sessions on success."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "me"]
+            },
+            "description": "Get the authenticated user's profile."
+          }
+        },
+        {
+          "name": "Update Current User",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Jane Doe\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "me"]
+            },
+            "description": "Update the authenticated user's profile fields."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Categories",
+      "item": [
+        {
+          "name": "List Categories",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["categories"]
+            },
+            "description": "List all categories for the authenticated user's account."
+          }
+        },
+        {
+          "name": "Create Category",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.id) {",
+                  "  pm.collectionVariables.set('categoryId', res.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Groceries\",\n  \"color\": \"#4CAF50\",\n  \"icon\": \"🛒\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["categories"]
+            },
+            "description": "Create a new category. On success: saves the new ID to `categoryId` collection variable."
+          }
+        },
+        {
+          "name": "Get Category",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/categories/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["categories", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{categoryId}}",
+                  "description": "Category ID"
+                }
+              ]
+            },
+            "description": "Get a single category by ID."
+          }
+        },
+        {
+          "name": "Update Category",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Food & Groceries\",\n  \"color\": \"#388E3C\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/categories/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["categories", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{categoryId}}",
+                  "description": "Category ID"
+                }
+              ]
+            },
+            "description": "Replace a category's fields."
+          }
+        },
+        {
+          "name": "Delete Category",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/categories/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["categories", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{categoryId}}",
+                  "description": "Category ID"
+                }
+              ]
+            },
+            "description": "Delete a category. Associated transactions have their categoryId set to null."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Transactions",
+      "item": [
+        {
+          "name": "List Transactions",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/transactions?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["transactions"],
+              "query": [
+                { "key": "page", "value": "1", "description": "Page number (default: 1)" },
+                { "key": "limit", "value": "20", "description": "Items per page, max 100 (default: 20)" },
+                { "key": "type", "value": "EXPENSE", "description": "Filter by type: INCOME or EXPENSE", "disabled": true },
+                { "key": "categoryId", "value": "{{categoryId}}", "description": "Filter by category ID", "disabled": true },
+                { "key": "from", "value": "2026-01-01T00:00:00.000Z", "description": "Filter from date (ISO 8601)", "disabled": true },
+                { "key": "to", "value": "2026-12-31T23:59:59.999Z", "description": "Filter to date (ISO 8601)", "disabled": true }
+              ]
+            },
+            "description": "List transactions with optional filters. All query parameters are optional."
+          }
+        },
+        {
+          "name": "Create Transaction",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.id) {",
+                  "  pm.collectionVariables.set('transactionId', res.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": \"42.50\",\n  \"description\": \"Weekly groceries\",\n  \"type\": \"EXPENSE\",\n  \"date\": \"2026-07-09T12:00:00.000Z\",\n  \"categoryId\": null\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/transactions",
+              "host": ["{{baseUrl}}"],
+              "path": ["transactions"]
+            },
+            "description": "Create a new transaction. `amount` must be a decimal string (e.g. \"42.50\"). `type` is INCOME or EXPENSE. On success: saves the new ID to `transactionId` collection variable."
+          }
+        },
+        {
+          "name": "Get Transaction",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/transactions/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["transactions", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{transactionId}}",
+                  "description": "Transaction ID"
+                }
+              ]
+            },
+            "description": "Get a single transaction by ID."
+          }
+        },
+        {
+          "name": "Update Transaction",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": \"55.00\",\n  \"description\": \"Weekly groceries (updated)\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/transactions/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["transactions", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{transactionId}}",
+                  "description": "Transaction ID"
+                }
+              ]
+            },
+            "description": "Update transaction fields. All fields are optional."
+          }
+        },
+        {
+          "name": "Delete Transaction",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/transactions/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["transactions", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{transactionId}}",
+                  "description": "Transaction ID"
+                }
+              ]
+            },
+            "description": "Delete a transaction."
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -231,7 +231,7 @@ apps/web/src/
       register/
         page.tsx
       layout.tsx
-    (app)/                          # Route group: authenticated shell
+    (private)/                          # Route group: authenticated shell
       layout.tsx                    # Sidebar, nav, session guard
       dashboard/
         page.tsx

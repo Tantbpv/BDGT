@@ -29,33 +29,62 @@ async function handleResponse<T>(response: Response): Promise<T> {
   return data.data as T;
 }
 
+const REFRESH_PATH = '/api/v1/auth/refresh';
+
+async function refreshTokens(): Promise<boolean> {
+  try {
+    const r = await fetch(REFRESH_PATH, { method: 'POST', credentials: 'include' });
+    return r.ok;
+  } catch {
+    return false;
+  }
+}
+
+async function fetchWithRetry(path: string, init: RequestInit): Promise<Response> {
+  const response = await fetch(path, init);
+
+  if (response.status !== 401 || path === REFRESH_PATH) {
+    return response;
+  }
+
+  const refreshed = await refreshTokens();
+  if (!refreshed) {
+    if (typeof window !== 'undefined') {
+      window.location.href = '/login';
+    }
+    return response;
+  }
+
+  return fetch(path, init);
+}
+
 const baseHeaders = { 'Content-Type': 'application/json' };
 const baseInit: RequestInit = { credentials: 'include' };
 
 export async function apiGet<T>(path: string): Promise<T> {
-  return handleResponse<T>(await fetch(path, { ...baseInit, headers: baseHeaders }));
+  return handleResponse<T>(await fetchWithRetry(path, { ...baseInit, headers: baseHeaders }));
 }
 
 export async function apiPost<T>(path: string, body: unknown): Promise<T> {
   return handleResponse<T>(
-    await fetch(path, { ...baseInit, method: 'POST', headers: baseHeaders, body: JSON.stringify(body) }),
+    await fetchWithRetry(path, { ...baseInit, method: 'POST', headers: baseHeaders, body: JSON.stringify(body) }),
   );
 }
 
 export async function apiPut<T>(path: string, body: unknown): Promise<T> {
   return handleResponse<T>(
-    await fetch(path, { ...baseInit, method: 'PUT', headers: baseHeaders, body: JSON.stringify(body) }),
+    await fetchWithRetry(path, { ...baseInit, method: 'PUT', headers: baseHeaders, body: JSON.stringify(body) }),
   );
 }
 
 export async function apiPatch<T>(path: string, body: unknown): Promise<T> {
   return handleResponse<T>(
-    await fetch(path, { ...baseInit, method: 'PATCH', headers: baseHeaders, body: JSON.stringify(body) }),
+    await fetchWithRetry(path, { ...baseInit, method: 'PATCH', headers: baseHeaders, body: JSON.stringify(body) }),
   );
 }
 
 export async function apiDelete<T>(path: string): Promise<T> {
   return handleResponse<T>(
-    await fetch(path, { ...baseInit, method: 'DELETE', headers: baseHeaders }),
+    await fetchWithRetry(path, { ...baseInit, method: 'DELETE', headers: baseHeaders }),
   );
 }

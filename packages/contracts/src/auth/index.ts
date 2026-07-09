@@ -25,7 +25,6 @@ export const TokenPayloadSchema = z.object({
 export type TokenPayload = z.infer<typeof TokenPayloadSchema>;
 
 export type AuthResponse = {
-  accessToken: string;
   user: {
     id: string;
     email: string;
@@ -38,3 +37,23 @@ export const RefreshRequestSchema = z.object({
 });
 
 export type RefreshRequest = z.infer<typeof RefreshRequestSchema>;
+
+export const ChangePasswordRequestSchema = z.object({
+  currentPassword: z.string().min(8),
+  newPassword: z.string().min(8),
+});
+
+export type ChangePasswordRequest = z.infer<typeof ChangePasswordRequestSchema>;
+
+export const ForgotPasswordRequestSchema = z.object({
+  email: z.string().email(),
+});
+
+export type ForgotPasswordRequest = z.infer<typeof ForgotPasswordRequestSchema>;
+
+export const ResetPasswordRequestSchema = z.object({
+  token: z.string().min(1),
+  newPassword: z.string().min(8),
+});
+
+export type ResetPasswordRequest = z.infer<typeof ResetPasswordRequestSchema>;

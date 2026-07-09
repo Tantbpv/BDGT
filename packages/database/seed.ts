@@ -1,18 +1,19 @@
+import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@prisma/client';
+import { hash } from 'bcryptjs';
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString: process.env['DATABASE_URL'] }) });
 
 async function main() {
   console.log('Seeding database...');
-
+  const passwordHash = await hash('demo@bdgt.dev', 12);
   // Seed data for development — not for production
   const user = await prisma.user.upsert({
     where: { email: 'demo@bdgt.dev' },
     update: {},
     create: {
       email: 'demo@bdgt.dev',
-      // bcrypt hash of "password123" — replace with a proper hash
-      passwordHash: '$2b$10$placeholder.hash.replace.before.running',
+      passwordHash,
       name: 'Demo User',
     },
   });
