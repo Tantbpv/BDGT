@@ -22,13 +22,15 @@ model User {
 }
 
 model UserSetting {
-  id             String   @id @default(cuid())
-  userId         String   @unique
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt @default(now())
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt @default(now())
   //
-  currency String  @default("EUR")
+  currency        String   @default("EUR")
+  activeAccount   Account? @relation(fields: [activeAccountId], references: [id], onDelete: SetNull)
+  activeAccountId String?
 }
 
 model RefreshToken {
@@ -57,13 +59,14 @@ model PasswordResetToken {
 // ─── Account ───────────────────────────────────────────────────────────────────
 
 model Account {
-  id           String        @id @default(cuid())
-  name         String
-  users        UserAccount[]
-  transactions Transaction[]
-  categories   Category[]
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt @default(now())
+  id               String        @id @default(cuid())
+  name             String
+  users            UserAccount[]
+  transactions     Transaction[]
+  categories       Category[]
+  activeInSettings UserSetting[]
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt @default(now())
 }
 
 model UserAccount {

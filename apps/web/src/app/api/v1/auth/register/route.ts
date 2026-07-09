@@ -42,11 +42,13 @@ export async function POST(
         email: parsed.data.email,
         passwordHash,
         name: parsed.data.name ?? null,
-        settings: { create: { currency: 'EUR' } },
       },
     });
     const account = await tx.account.create({ data: { name: 'Default' } });
     await tx.userAccount.create({ data: { userId: newUser.id, accountId: account.id } });
+    await tx.userSetting.create({
+      data: { userId: newUser.id, currency: 'EUR', activeAccountId: account.id },
+    });
     return newUser;
   });
 

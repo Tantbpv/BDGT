@@ -1,11 +1,9 @@
 import type { Metadata } from 'next';
 
+import { SettingsView } from '@/features/settings/components/SettingsView';
+
 export const metadata: Metadata = { title: 'Settings — BDGT' };
 
 export default function SettingsPage() {
-  return (
-    <div>
-      <h1>Settings</h1>
-    </div>
-  );
+  return <SettingsView />;
 }

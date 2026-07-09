@@ -44,3 +44,4 @@ export async function getAuthUser(request: NextRequest): Promise<AuthResult> {
     };
   }
 }
+
