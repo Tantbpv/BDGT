@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import type { AuthResponse } from '@/features/auth/types';
-import { ApiClientError, apiPost } from '@/shared/lib/api-client';
+import { apiClient,ApiClientError } from '@/shared/lib/api-client';
 
 const STRINGS = {
   title: 'Sign in to BDGT',
@@ -41,7 +41,7 @@ export function LoginForm() {
   const onSubmit = handleSubmit(async (data) => {
     setServerError(null);
     try {
-      await apiPost<AuthResponse>('/api/v1/auth/login', data);
+      await apiClient.post<AuthResponse>('/api/v1/auth/login', data);
       router.push('/dashboard');
     } catch (err) {
       if (err instanceof ApiClientError) {

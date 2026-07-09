@@ -1,16 +1,23 @@
-import { ACCESS_TOKEN_COOKIE, ACCESS_TOKEN_HEADER, type AccessTokenPayload, BEARER_PREFIX, verifyAccessToken } from '@repo/auth';
+import {
+  ACCESS_TOKEN_COOKIE,
+  ACCESS_TOKEN_HEADER,
+  type AccessTokenPayload,
+  BEARER_PREFIX,
+  verifyAccessToken,
+} from '@repo/auth';
 import { parseEnv } from '@repo/config';
 import type { ApiError } from '@repo/contracts/common';
 import { type NextRequest, NextResponse } from 'next/server';
 
 export type AuthResult =
-  | { ok: true; payload: AccessTokenPayload }
-  | { ok: false; response: NextResponse<ApiError> };
+  { ok: true; payload: AccessTokenPayload } | { ok: false; response: NextResponse<ApiError> };
 
 export async function getAuthUser(request: NextRequest): Promise<AuthResult> {
   const cookieToken = request.cookies.get(ACCESS_TOKEN_COOKIE)?.value;
   const authHeader = request.headers.get(ACCESS_TOKEN_HEADER);
-  const headerToken = authHeader?.startsWith(BEARER_PREFIX) ? authHeader.slice(BEARER_PREFIX.length) : null;
+  const headerToken = authHeader?.startsWith(BEARER_PREFIX)
+    ? authHeader.slice(BEARER_PREFIX.length)
+    : null;
   const token = cookieToken ?? headerToken;
 
   if (!token) {
