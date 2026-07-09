@@ -56,7 +56,7 @@ export function RegisterForm() {
   });
 
   return (
-    <Card className="w-full max-w-sm">
+    <Card className="w-full max-w-md">
       <CardHeader>
         <CardTitle className="text-xl">{STRINGS.title}</CardTitle>
       </CardHeader>
@@ -74,9 +74,7 @@ export function RegisterForm() {
               autoComplete="name"
               {...register('name')}
             />
-            {errors.name && (
-              <p className="text-destructive text-sm">{errors.name.message}</p>
-            )}
+            {errors.name && <p className="text-destructive text-sm">{errors.name.message}</p>}
           </div>
 
           <div className="flex flex-col gap-1.5">
@@ -88,9 +86,7 @@ export function RegisterForm() {
               autoComplete="email"
               {...register('email')}
             />
-            {errors.email && (
-              <p className="text-destructive text-sm">{errors.email.message}</p>
-            )}
+            {errors.email && <p className="text-destructive text-sm">{errors.email.message}</p>}
           </div>
 
           <div className="flex flex-col gap-1.5">

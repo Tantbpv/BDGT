@@ -53,7 +53,7 @@ export function LoginForm() {
   });
 
   return (
-    <Card className="w-full max-w-sm">
+    <Card className="w-full max-w-md">
       <CardHeader>
         <CardTitle className="text-xl">{STRINGS.title}</CardTitle>
       </CardHeader>
@@ -68,9 +68,7 @@ export function LoginForm() {
               autoComplete="email"
               {...register('email')}
             />
-            {errors.email && (
-              <p className="text-destructive text-sm">{errors.email.message}</p>
-            )}
+            {errors.email && <p className="text-destructive text-sm">{errors.email.message}</p>}
           </div>
 
           <div className="flex flex-col gap-1.5">
