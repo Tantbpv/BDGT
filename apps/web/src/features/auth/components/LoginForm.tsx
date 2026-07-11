@@ -3,16 +3,14 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { type LoginRequest, LoginRequestSchema } from '@repo/contracts/auth';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import type { AuthResponse } from '@/features/auth/types';
-import { apiClient, ApiClientError } from '@/shared/lib/api-client';
+import { useLogin } from '@/features/auth/hooks/useAuth';
+import { ApiClientError } from '@/shared/lib/api-client';
 
 const STRINGS = {
   title: 'Sign in to BDGT',
@@ -27,30 +25,24 @@ const STRINGS = {
 } as const;
 
 export function LoginForm() {
-  const router = useRouter();
-  const [serverError, setServerError] = useState<string | null>(null);
+  const login = useLogin();
 
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<LoginRequest>({
     resolver: zodResolver(LoginRequestSchema),
   });
 
-  const onSubmit = handleSubmit(async (data) => {
-    setServerError(null);
-    try {
-      await apiClient.post<AuthResponse>('/api/v1/auth/login', data);
-      router.push('/transactions');
-    } catch (err) {
-      if (err instanceof ApiClientError) {
-        setServerError(err.message);
-      } else {
-        setServerError(STRINGS.errorFallback);
-      }
-    }
-  });
+  const onSubmit = handleSubmit((data) => { login.mutate(data); });
+
+  let serverError: string | null = null;
+  if (login.error instanceof ApiClientError) {
+    serverError = login.error.message;
+  } else if (login.error !== null && login.error !== undefined) {
+    serverError = STRINGS.errorFallback;
+  }
 
   return (
     <Card className="w-full max-w-md">
@@ -90,8 +82,8 @@ export function LoginForm() {
             </p>
           )}
 
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? STRINGS.submitPending : STRINGS.submitIdle}
+          <Button type="submit" className="w-full" disabled={login.isPending}>
+            {login.isPending ? STRINGS.submitPending : STRINGS.submitIdle}
           </Button>
 
           <p className="text-muted-foreground text-center text-sm">

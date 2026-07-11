@@ -3,6 +3,7 @@ import './globals.css';
 import type { Metadata } from 'next';
 import { Geist } from 'next/font/google';
 
+import { AppHeader } from '@/components/AppHeader';
 import { cn } from '@/lib/utils';
 
 import { Providers } from './providers';
@@ -18,7 +19,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={cn('dark font-sans', geist.variable)}>
       <body>
-        <Providers>{children}</Providers>
+        <Providers>
+          <div className="min-h-screen flex flex-col">
+            <AppHeader />
+            {children}
+          </div>
+        </Providers>
       </body>
     </html>
   );

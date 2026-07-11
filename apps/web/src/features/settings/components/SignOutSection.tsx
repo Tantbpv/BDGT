@@ -1,11 +1,8 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { apiClient } from '@/shared/lib/api-client';
+import { useLogout } from '@/features/auth/hooks/useAuth';
 
 const STRINGS = {
   title: 'Sign out',
@@ -14,17 +11,7 @@ const STRINGS = {
 } as const;
 
 export function SignOutSection() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(false);
-
-  const handleSignOut = async () => {
-    setLoading(true);
-    try {
-      await apiClient.delete('/api/v1/auth/logout');
-    } finally {
-      router.push('/login');
-    }
-  };
+  const logout = useLogout();
 
   return (
     <Card>
@@ -34,10 +21,10 @@ export function SignOutSection() {
       <CardContent>
         <Button
           variant="destructive"
-          onClick={() => { void handleSignOut(); }}
-          disabled={loading}
+          onClick={() => { logout.mutate(); }}
+          disabled={logout.isPending}
         >
-          {loading ? STRINGS.buttonPending : STRINGS.buttonIdle}
+          {logout.isPending ? STRINGS.buttonPending : STRINGS.buttonIdle}
         </Button>
       </CardContent>
     </Card>

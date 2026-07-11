@@ -18,6 +18,7 @@ export class ApiClientError extends Error {
 }
 
 const REFRESH_PATH = '/api/v1/auth/refresh';
+const USERS_ME_PATH = '/api/v1/users/me';
 
 class ApiClient {
   private readonly baseHeaders = { 'Content-Type': 'application/json' };
@@ -47,7 +48,7 @@ class ApiClient {
   private async fetchWithRetry(path: string, init: RequestInit): Promise<Response> {
     const response = await fetch(path, init);
 
-    if (response.status !== 401 || path === REFRESH_PATH) {
+    if (response.status !== 401 || path === REFRESH_PATH || path === USERS_ME_PATH) {
       return response;
     }
 

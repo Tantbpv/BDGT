@@ -3,16 +3,14 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { type RegisterRequest, RegisterRequestSchema } from '@repo/contracts/auth';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import type { AuthResponse } from '@/features/auth/types';
-import { apiClient, ApiClientError } from '@/shared/lib/api-client';
+import { useRegister } from '@/features/auth/hooks/useAuth';
+import { ApiClientError } from '@/shared/lib/api-client';
 
 const STRINGS = {
   title: 'Create your account',
@@ -30,30 +28,24 @@ const STRINGS = {
 } as const;
 
 export function RegisterForm() {
-  const router = useRouter();
-  const [serverError, setServerError] = useState<string | null>(null);
+  const registerMutation = useRegister();
 
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<RegisterRequest>({
     resolver: zodResolver(RegisterRequestSchema),
   });
 
-  const onSubmit = handleSubmit(async (data) => {
-    setServerError(null);
-    try {
-      await apiClient.post<AuthResponse>('/api/v1/auth/register', data);
-      router.push('/transactions');
-    } catch (err) {
-      if (err instanceof ApiClientError) {
-        setServerError(err.message);
-      } else {
-        setServerError(STRINGS.errorFallback);
-      }
-    }
-  });
+  const onSubmit = handleSubmit((data) => { registerMutation.mutate(data); });
+
+  let serverError: string | null = null;
+  if (registerMutation.error instanceof ApiClientError) {
+    serverError = registerMutation.error.message;
+  } else if (registerMutation.error !== null && registerMutation.error !== undefined) {
+    serverError = STRINGS.errorFallback;
+  }
 
   return (
     <Card className="w-full max-w-md">
@@ -108,8 +100,8 @@ export function RegisterForm() {
             </p>
           )}
 
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? STRINGS.submitPending : STRINGS.submitIdle}
+          <Button type="submit" className="w-full" disabled={registerMutation.isPending}>
+            {registerMutation.isPending ? STRINGS.submitPending : STRINGS.submitIdle}
           </Button>
 
           <p className="text-muted-foreground text-center text-sm">
