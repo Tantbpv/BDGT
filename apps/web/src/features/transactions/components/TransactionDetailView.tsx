@@ -1,15 +1,15 @@
 'use client';
 
-import type { Transaction } from '@repo/contracts/transactions';
 import { formatDateTime } from '@repo/utils/date';
 import { formatCurrency } from '@repo/utils/money';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { apiClient,ApiClientError } from '@/shared/lib/api-client';
+
+import { useDeleteTransaction, useTransaction } from '../hooks/useTransactions';
 
 const STRINGS = {
   title: 'Transaction',
@@ -45,27 +45,12 @@ interface Props {
 
 export function TransactionDetailView({ id }: Props) {
   const router = useRouter();
-  const [transaction, setTransaction] = useState<Transaction | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: transaction, isPending, isError, error } = useTransaction(id);
+  const deleteTransaction = useDeleteTransaction();
   const [deleteState, setDeleteState] = useState<DeleteState>('idle');
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const data = await apiClient.get<Transaction>(`/api/v1/transactions/${id}`);
-        setTransaction(data);
-      } catch (err) {
-        setError(err instanceof ApiClientError ? err.message : STRINGS.errorFallback);
-      } finally {
-        setLoading(false);
-      }
-    }
-    void load();
-  }, [id]);
-
-  async function handleDelete() {
+  function handleDelete() {
     if (deleteState === 'idle') {
       setDeleteState('confirming');
       return;
@@ -73,13 +58,13 @@ export function TransactionDetailView({ id }: Props) {
     if (deleteState === 'confirming') {
       setDeleteState('deleting');
       setDeleteError(null);
-      try {
-        await apiClient.delete(`/api/v1/transactions/${id}`);
-        router.push('/transactions');
-      } catch (err) {
-        setDeleteError(err instanceof ApiClientError ? err.message : STRINGS.deleteErrorFallback);
-        setDeleteState('idle');
-      }
+      deleteTransaction.mutate(id, {
+        onSuccess: () => router.push('/transactions'),
+        onError: (err) => {
+          setDeleteError(err.message ?? STRINGS.deleteErrorFallback);
+          setDeleteState('idle');
+        },
+      });
     }
   }
 
@@ -94,8 +79,8 @@ export function TransactionDetailView({ id }: Props) {
         <h1 className="text-2xl font-semibold">{STRINGS.title}</h1>
       </div>
 
-      {loading && <p className="text-muted-foreground text-sm">{STRINGS.loadingText}</p>}
-      {error && <p className="text-destructive text-sm" role="alert">{error}</p>}
+      {isPending && <p className="text-muted-foreground text-sm">{STRINGS.loadingText}</p>}
+      {isError && <p className="text-destructive text-sm" role="alert">{error.message}</p>}
 
       {transaction && (
         <Card>

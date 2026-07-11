@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { CURRENCIES } from '@/features/settings/types';
-import { apiClient, ApiClientError } from '@/shared/lib/api-client';
+
+import { useSettings, useUpdateSettings } from '../hooks/useSettings';
+import { CURRENCIES } from '../types';
 
 const STRINGS = {
   title: 'User Settings',
@@ -14,32 +15,31 @@ const STRINGS = {
   saveIdle: 'Save changes',
   savePending: 'Saving…',
   saveDone: 'Saved!',
-  errorFallback: 'Failed to save settings',
 } as const;
 
-export function CurrencySection({ initialCurrency }: { initialCurrency: string }) {
-  const [currency, setCurrency] = useState(initialCurrency);
-  const [saving, setSaving] = useState(false);
+export function CurrencySection() {
+  const { data: settings } = useSettings();
+  const updateSettings = useUpdateSettings();
+  const [currency, setCurrency] = useState('');
   const [saved, setSaved] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (settings?.currency) setCurrency(settings.currency);
+  }, [settings?.currency]);
 
   const handleSave = async () => {
-    setSaving(true);
-    setError(null);
     setSaved(false);
     try {
-      await apiClient.patch('/api/v1/users/me/settings', { currency });
+      await updateSettings.mutateAsync({ currency: currency as 'EUR' | 'USD' | 'UAH' });
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
-    } catch (err) {
-      setError(err instanceof ApiClientError ? err.message : STRINGS.errorFallback);
-    } finally {
-      setSaving(false);
+    } catch {
+      // error shown via updateSettings.isError
     }
   };
 
-  let buttonLabel = STRINGS.saveIdle;
-  if (saving) buttonLabel = STRINGS.savePending;
+  let buttonLabel: string = STRINGS.saveIdle;
+  if (updateSettings.isPending) buttonLabel = STRINGS.savePending;
   else if (saved) buttonLabel = STRINGS.saveDone;
 
   return (
@@ -64,13 +64,13 @@ export function CurrencySection({ initialCurrency }: { initialCurrency: string }
           </select>
         </div>
 
-        {error && (
+        {updateSettings.isError && (
           <p className="text-destructive text-sm" role="alert">
-            {error}
+            {updateSettings.error.message}
           </p>
         )}
 
-        <Button onClick={() => { void handleSave(); }} disabled={saving} className="self-start">
+        <Button onClick={() => { void handleSave(); }} disabled={updateSettings.isPending} className="self-start">
           {buttonLabel}
         </Button>
       </CardContent>

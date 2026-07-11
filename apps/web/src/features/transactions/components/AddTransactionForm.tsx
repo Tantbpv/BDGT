@@ -12,7 +12,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { apiClient, ApiClientError } from '@/shared/lib/api-client';
+
+import { useCreateTransaction } from '../hooks/useTransactions';
 
 const FormSchema = z.object({
   amount: z.string().regex(/^\d+(\.\d{1,2})?$/, 'Enter a valid amount (e.g. 12.50)'),
@@ -60,11 +61,11 @@ function deriveDescription(
 
 interface Props {
   categories: Category[];
-  onSuccess: () => void;
 }
 
-export function AddTransactionForm({ categories, onSuccess }: Props) {
+export function AddTransactionForm({ categories }: Props) {
   const [serverError, setServerError] = useState<string | null>(null);
+  const createTransaction = useCreateTransaction();
 
   const {
     register,
@@ -91,7 +92,7 @@ export function AddTransactionForm({ categories, onSuccess }: Props) {
   const onSubmit = handleSubmit(async (data) => {
     setServerError(null);
     try {
-      await apiClient.post('/api/v1/transactions', {
+      await createTransaction.mutateAsync({
         amount: data.amount,
         description: deriveDescription(data.description, data.categoryIds, categories),
         type: data.type,
@@ -99,9 +100,8 @@ export function AddTransactionForm({ categories, onSuccess }: Props) {
         date: new Date().toISOString(),
       });
       reset({ amount: '', description: '', type: 'EXPENSE', categoryIds: [] });
-      onSuccess();
     } catch (err) {
-      setServerError(err instanceof ApiClientError ? err.message : 'Failed to add transaction');
+      setServerError(err instanceof Error ? err.message : 'Failed to add transaction');
     }
   });
 

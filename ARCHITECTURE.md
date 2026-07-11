@@ -56,6 +56,7 @@ Key outcomes:
 | Database | PostgreSQL | Relational model suits finance data; ACID transactions |
 | ORM | Prisma | Type-safe queries, schema-as-code, migration tooling |
 | Validation | Zod | Runtime type safety; schemas serve as both validation and type source |
+| Client State | TanStack Query v5 | Server-state caching, deduplication, automatic invalidation; eliminates hand-rolled `useEffect + useState` fetch patterns |
 | Authentication | JWT + Refresh Token Rotation | Stateless; suitable for SPA + API architecture |
 | Logging | Pino | Structured JSON; lowest overhead Node.js logger |
 | Visualization | D3.js | Low-level control for custom budget and spending charts |
@@ -267,7 +268,8 @@ apps/web/src/
         users/
           me/
             route.ts                # GET, PATCH
-    layout.tsx                      # Root layout (fonts, providers)
+    providers.tsx                   # QueryClientProvider + ReactQueryDevtools wrapper ('use client')
+    layout.tsx                      # Root layout (fonts, wraps children with <Providers>)
     globals.css
   features/                         # Feature modules — domain logic lives here
     auth/
@@ -276,14 +278,18 @@ apps/web/src/
       lib/                          # Token storage, auth helpers
       types.ts
     transactions/
-      components/                   # TransactionList, TransactionCard, TransactionForm, TransactionFilters
-      hooks/                        # useTransactions, useCreateTransaction, useDeleteTransaction
-      api/                          # Fetch wrappers calling /api/v1/transactions
-      lib/                          # Amount formatters, date formatters, validators
+      components/                   # TransactionsView, TransactionDetailView, AddTransactionForm, TransactionsList
+      hooks/
+        useTransactions.ts          # useTransactions, useTransaction(id), useCreateTransaction, useDeleteTransaction
+      types.ts
+    settings/
+      components/                   # SettingsView (layout shell), CurrencySection, AccountsSection, CategoriesSection, ChangePasswordSection, SignOutSection
+      hooks/
+        useSettings.ts              # useSettings, useAccounts, useCategories + all 6 mutation hooks
       types.ts
     labels/
       components/                   # LabelList, LabelBadge, LabelForm
-      hooks/                        # useLabels, useCreateLabel
+      hooks/                        # useLabels, useCreateLabel (post-MVP)
       api/
       lib/
       types.ts
@@ -301,7 +307,8 @@ apps/web/src/
       layout/                       # PageHeader, Sidebar, NavBar, PageContainer
     hooks/                          # useDebounce, usePagination, useLocalStorage
     lib/
-      api-client.ts                 # Base fetch wrapper with error handling and type inference
+      api-client.ts                 # Base fetch wrapper; 401 → silent token refresh → redirect to /login
+      query-keys.ts                 # Typed query key factories for all TanStack Query caches (transactions, categories, accounts, settings)
       validators.ts                 # Reusable Zod schemas (pagination, id params)
       utils.ts
     types/
@@ -607,3 +614,45 @@ Significant architectural choices are documented in `architecture/decisions/`.
 | ADR-007 | Clean Architecture layers inside every NestJS service | Accepted |
 | ADR-008 | Claude API for AI assistant service | Accepted |
 | ADR-009 | D3.js for budget and analytics visualization | Accepted |
+| ADR-010 | TanStack Query for client-side server-state management | Accepted |
+| ADR-011 | Feature-level query hooks co-located with domain feature | Accepted |
+
+---
+
+### ADR-010 — TanStack Query for client-side server-state management
+
+**Status:** Accepted
+
+**Context:**
+Every component that fetched data from the API owned a hand-rolled `loading / error / data` state triple and a `useEffect`. Mutations used `try/catch/finally` blocks that manually updated local arrays (e.g. appending a new category after POST). Cross-component refresh required threading callback props — `TransactionsView` passed `reloadTransactions` down into `AddTransactionForm` solely to trigger a re-fetch after a successful create.
+
+**Decision:**
+Adopt `@tanstack/react-query` (v5) as the server-state layer. All `GET` calls become `useQuery` hooks; all `POST / PATCH / DELETE` calls become `useMutation` hooks. Cache invalidation via `queryClient.invalidateQueries` replaces all manual state-sync callbacks.
+
+**Consequences:**
+- `QueryClientProvider` wrapper added in `src/app/providers.tsx`; root layout wraps children with it
+- Query key conventions centralised in `src/shared/lib/query-keys.ts`
+- `reloadTransactions` callback prop eliminated — `useCreateTransaction` invalidates `['transactions']` internally
+- All `useEffect`-based fetches in `TransactionsView`, `TransactionDetailView`, and `SettingsView` removed
+- 401 handling stays in `apiClient.fetchWithRetry` (transparent to TanStack Query); cache-level `onError` in `QueryCache` / `MutationCache` is the correct hook for global error logging or toast notifications
+- `@tanstack/react-query-devtools` included in the provider for development inspection
+
+---
+
+### ADR-011 — Feature-level query hooks co-located with domain feature
+
+**Status:** Accepted
+
+**Context:**
+After adopting TanStack Query (ADR-010), hooks that wrap queries and mutations needed a home. Options considered: (a) a shared `src/shared/hooks/` directory; (b) a top-level `src/hooks/` directory; (c) per-feature `hooks/` subdirectories inside `src/features/{domain}/`.
+
+**Decision:**
+Place all query and mutation hooks inside `src/features/{domain}/hooks/`. Each feature module owns its data-fetching contract end-to-end: components, hooks, and types are co-located under the same feature directory.
+
+**Consequences:**
+- `src/features/transactions/hooks/useTransactions.ts` owns all transaction query/mutation hooks
+- `src/features/settings/hooks/useSettings.ts` owns settings, accounts, and categories hooks (these are always fetched together and share the same page context)
+- `SettingsView` became a pure layout shell; `CurrencySection`, `AccountsSection`, and `CategoriesSection` each call their own hooks — `initial*` prop drilling eliminated
+- TanStack Query deduplicates requests with the same key within a render, so multiple components calling `useCategories()` on the same page incur only one network request
+- The pattern established here is the template for future feature modules (`dashboard`, `analytics`)
+

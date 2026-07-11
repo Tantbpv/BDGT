@@ -7,8 +7,14 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import type { Account } from '@/features/settings/types';
-import { apiClient, ApiClientError } from '@/shared/lib/api-client';
+
+import {
+  useAccounts,
+  useCreateAccount,
+  useDeleteAccount,
+  useSettings,
+  useUpdateSettings,
+} from '../hooks/useSettings';
 
 const STRINGS = {
   title: 'Accounts',
@@ -23,68 +29,32 @@ const STRINGS = {
   deleteConfirm: 'Delete this account and all related transactions? This cannot be undone.',
 } as const;
 
-type Props = {
-  initialAccounts: Account[];
-  initialActiveAccountId: string | null;
-};
-
-export function AccountsSection({ initialAccounts, initialActiveAccountId }: Props) {
-  const [accounts, setAccounts] = useState<Account[]>(initialAccounts);
-  const [activeAccountId, setActiveAccountId] = useState<string | null>(initialActiveAccountId);
+export function AccountsSection() {
+  const { data: accounts = [] } = useAccounts();
+  const { data: settings } = useSettings();
+  const updateSettings = useUpdateSettings();
+  const createAccount = useCreateAccount();
+  const deleteAccount = useDeleteAccount();
   const [newName, setNewName] = useState('');
-  const [creating, setCreating] = useState(false);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [createError, setCreateError] = useState<string | null>(null);
-  const [selectError, setSelectError] = useState<string | null>(null);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
 
-  const handleSelect = async (accountId: string) => {
-    const prev = activeAccountId;
-    setActiveAccountId(accountId);
-    setSelectError(null);
-    try {
-      await apiClient.patch('/api/v1/users/me/settings', { activeAccountId: accountId });
-    } catch (err) {
-      setActiveAccountId(prev);
-      setSelectError(err instanceof ApiClientError ? err.message : STRINGS.selectErrorFallback);
-    }
+  const activeAccountId = settings?.activeAccountId ?? null;
+
+  const handleSelect = (accountId: string) => {
+    updateSettings.mutate({ activeAccountId: accountId });
   };
 
-  const handleDelete = async (accountId: string) => {
+  const handleDelete = (accountId: string) => {
     if (!window.confirm(STRINGS.deleteConfirm)) return;
-
-    setDeletingId(accountId);
-    setDeleteError(null);
-    try {
-      await apiClient.delete(`/api/v1/accounts/${accountId}`);
-      const remaining = accounts.filter((a) => a.id !== accountId);
-      setAccounts(remaining);
-      if (activeAccountId === accountId) {
-        setActiveAccountId(remaining[0]?.id ?? null);
-      }
-    } catch (err) {
-      setDeleteError(err instanceof ApiClientError ? err.message : STRINGS.deleteErrorFallback);
-    } finally {
-      setDeletingId(null);
-    }
+    deleteAccount.mutate(accountId);
   };
 
-  const handleCreate: React.FormEventHandler<HTMLFormElement> = async (e) => {
+  const handleCreate: React.FormEventHandler<HTMLFormElement> = (e) => {
     e.preventDefault();
     const name = newName.trim();
     if (!name) return;
-
-    setCreating(true);
-    setCreateError(null);
-    try {
-      const created = await apiClient.post<Account>('/api/v1/accounts', { name });
-      setAccounts((prev) => [...prev, created]);
-      setNewName('');
-    } catch (err) {
-      setCreateError(err instanceof ApiClientError ? err.message : STRINGS.createErrorFallback);
-    } finally {
-      setCreating(false);
-    }
+    createAccount.mutate({ name }, {
+      onSuccess: () => setNewName(''),
+    });
   };
 
   return (
@@ -117,7 +87,7 @@ export function AccountsSection({ initialAccounts, initialActiveAccountId }: Pro
               <button
                 type="button"
                 onClick={() => handleDelete(account.id)}
-                disabled={accounts.length <= 1 || deletingId === account.id}
+                disabled={accounts.length <= 1 || (deleteAccount.isPending && deleteAccount.variables === account.id)}
                 aria-label={`Delete ${account.name}`}
                 className="text-muted-foreground transition-colors hover:text-destructive disabled:pointer-events-none disabled:opacity-30"
               >
@@ -127,18 +97,18 @@ export function AccountsSection({ initialAccounts, initialActiveAccountId }: Pro
           ))}
         </div>
 
-        {selectError && (
+        {updateSettings.isError && (
           <p className="text-destructive text-sm" role="alert">
-            {selectError}
+            {updateSettings.error.message}
           </p>
         )}
-        {deleteError && (
+        {deleteAccount.isError && (
           <p className="text-destructive text-sm" role="alert">
-            {deleteError}
+            {deleteAccount.error.message}
           </p>
         )}
 
-        <form onSubmit={(e) => handleCreate(e)} className="flex items-end gap-2">
+        <form onSubmit={handleCreate} className="flex items-end gap-2">
           <div className="flex flex-1 flex-col gap-1.5">
             <Label htmlFor="new-account">{STRINGS.newAccountLabel}</Label>
             <Input
@@ -146,17 +116,17 @@ export function AccountsSection({ initialAccounts, initialActiveAccountId }: Pro
               placeholder={STRINGS.newAccountPlaceholder}
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
-              disabled={creating}
+              disabled={createAccount.isPending}
             />
           </div>
-          <Button type="submit" disabled={creating || !newName.trim()}>
-            {creating ? STRINGS.addPending : STRINGS.addIdle}
+          <Button type="submit" disabled={createAccount.isPending || !newName.trim()}>
+            {createAccount.isPending ? STRINGS.addPending : STRINGS.addIdle}
           </Button>
         </form>
 
-        {createError && (
+        {createAccount.isError && (
           <p className="text-destructive text-sm" role="alert">
-            {createError}
+            {createAccount.error.message}
           </p>
         )}
       </CardContent>

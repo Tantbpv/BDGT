@@ -1,6 +1,5 @@
 'use client';
 
-import type { Category } from '@repo/contracts/categories';
 import { Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -8,7 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { apiClient, ApiClientError } from '@/shared/lib/api-client';
+
+import { useCategories, useCreateCategory, useDeleteCategory } from '../hooks/useSettings';
 
 const STRINGS = {
   title: 'Categories',
@@ -17,54 +17,27 @@ const STRINGS = {
   newCategoryPlaceholder: 'Category name',
   addIdle: 'Add',
   addPending: 'Adding…',
-  createErrorFallback: 'Failed to create category',
-  deleteErrorFallback: 'Failed to delete category',
   deleteConfirm: 'Delete this category? Transactions using it will have no category.',
 } as const;
 
-type Props = {
-  initialCategories: Category[];
-};
-
-export function CategoriesSection({ initialCategories }: Props) {
-  const [categories, setCategories] = useState<Category[]>(initialCategories);
+export function CategoriesSection() {
+  const { data: categories = [] } = useCategories();
+  const createCategory = useCreateCategory();
+  const deleteCategory = useDeleteCategory();
   const [newName, setNewName] = useState('');
-  const [creating, setCreating] = useState(false);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [createError, setCreateError] = useState<string | null>(null);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
 
-  const handleDelete = async (categoryId: string) => {
+  const handleDelete = (categoryId: string) => {
     if (!window.confirm(STRINGS.deleteConfirm)) return;
-
-    setDeletingId(categoryId);
-    setDeleteError(null);
-    try {
-      await apiClient.delete(`/api/v1/categories/${categoryId}`);
-      setCategories((prev) => prev.filter((c) => c.id !== categoryId));
-    } catch (err) {
-      setDeleteError(err instanceof ApiClientError ? err.message : STRINGS.deleteErrorFallback);
-    } finally {
-      setDeletingId(null);
-    }
+    deleteCategory.mutate(categoryId);
   };
 
-  const handleCreate: React.FormEventHandler<HTMLFormElement> = async (e) => {
+  const handleCreate: React.FormEventHandler<HTMLFormElement> = (e) => {
     e.preventDefault();
     const name = newName.trim();
     if (!name) return;
-
-    setCreating(true);
-    setCreateError(null);
-    try {
-      const created = await apiClient.post<Category>('/api/v1/categories', { name });
-      setCategories((prev) => [...prev, created]);
-      setNewName('');
-    } catch (err) {
-      setCreateError(err instanceof ApiClientError ? err.message : STRINGS.createErrorFallback);
-    } finally {
-      setCreating(false);
-    }
+    createCategory.mutate({ name }, {
+      onSuccess: () => setNewName(''),
+    });
   };
 
   return (
@@ -85,7 +58,7 @@ export function CategoriesSection({ initialCategories }: Props) {
               <button
                 type="button"
                 onClick={() => handleDelete(category.id)}
-                disabled={deletingId === category.id}
+                disabled={deleteCategory.isPending && deleteCategory.variables === category.id}
                 aria-label={`Delete ${category.name}`}
                 className="text-muted-foreground transition-colors hover:text-destructive disabled:pointer-events-none disabled:opacity-30"
               >
@@ -95,9 +68,9 @@ export function CategoriesSection({ initialCategories }: Props) {
           ))}
         </div>
 
-        {deleteError && (
+        {deleteCategory.isError && (
           <p className="text-destructive text-sm" role="alert">
-            {deleteError}
+            {deleteCategory.error.message}
           </p>
         )}
 
@@ -109,17 +82,17 @@ export function CategoriesSection({ initialCategories }: Props) {
               placeholder={STRINGS.newCategoryPlaceholder}
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
-              disabled={creating}
+              disabled={createCategory.isPending}
             />
           </div>
-          <Button type="submit" disabled={creating || !newName.trim()}>
-            {creating ? STRINGS.addPending : STRINGS.addIdle}
+          <Button type="submit" disabled={createCategory.isPending || !newName.trim()}>
+            {createCategory.isPending ? STRINGS.addPending : STRINGS.addIdle}
           </Button>
         </form>
 
-        {createError && (
+        {createCategory.isError && (
           <p className="text-destructive text-sm" role="alert">
-            {createError}
+            {createCategory.error.message}
           </p>
         )}
       </CardContent>
