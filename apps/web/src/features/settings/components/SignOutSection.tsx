@@ -34,7 +34,7 @@ export function SignOutSection() {
       <CardContent>
         <Button
           variant="destructive"
-          onClick={() => void handleSignOut()}
+          onClick={() => { void handleSignOut(); }}
           disabled={loading}
         >
           {loading ? STRINGS.buttonPending : STRINGS.buttonIdle}

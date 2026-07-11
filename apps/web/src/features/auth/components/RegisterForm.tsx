@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import type { AuthResponse } from '@/features/auth/types';
-import { apiClient,ApiClientError } from '@/shared/lib/api-client';
+import { apiClient, ApiClientError } from '@/shared/lib/api-client';
 
 const STRINGS = {
   title: 'Create your account',
@@ -45,7 +45,7 @@ export function RegisterForm() {
     setServerError(null);
     try {
       await apiClient.post<AuthResponse>('/api/v1/auth/register', data);
-      router.push('/dashboard');
+      router.push('/transactions');
     } catch (err) {
       if (err instanceof ApiClientError) {
         setServerError(err.message);

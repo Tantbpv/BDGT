@@ -1,5 +1,5 @@
 import type { ApiError, ApiResponse } from '@repo/contracts/common';
-import { type UserSetting, UpdateUserSettingSchema } from '@repo/contracts/users';
+import { UpdateUserSettingSchema,type UserSetting } from '@repo/contracts/users';
 import { prisma } from '@repo/database';
 import { type NextRequest, NextResponse } from 'next/server';
 

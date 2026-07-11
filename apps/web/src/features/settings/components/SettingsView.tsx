@@ -1,11 +1,13 @@
 'use client';
 
+import type { Category } from '@repo/contracts/categories';
 import { useEffect, useState } from 'react';
 
 import type { Account, UserSetting } from '@/features/settings/types';
 import { apiClient, ApiClientError } from '@/shared/lib/api-client';
 
 import { AccountsSection } from './AccountsSection';
+import { CategoriesSection } from './CategoriesSection';
 import { ChangePasswordSection } from './ChangePasswordSection';
 import { CurrencySection } from './CurrencySection';
 import { SignOutSection } from './SignOutSection';
@@ -13,18 +15,21 @@ import { SignOutSection } from './SignOutSection';
 export function SettingsView() {
   const [settings, setSettings] = useState<UserSetting | null>(null);
   const [accounts, setAccounts] = useState<Account[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
       try {
-        const [loadedSettings, loadedAccounts] = await Promise.all([
+        const [loadedSettings, loadedAccounts, loadedCategories] = await Promise.all([
           apiClient.get<UserSetting>('/api/v1/users/me/settings'),
           apiClient.get<Account[]>('/api/v1/accounts'),
+          apiClient.get<Category[]>('/api/v1/categories'),
         ]);
         setSettings(loadedSettings);
         setAccounts(loadedAccounts);
+        setCategories(loadedCategories);
       } catch (err) {
         setError(err instanceof ApiClientError ? err.message : 'Failed to load settings');
       } finally {
@@ -56,6 +61,7 @@ export function SettingsView() {
         initialAccounts={accounts}
         initialActiveAccountId={settings.activeAccountId}
       />
+      <CategoriesSection initialCategories={categories} />
       <ChangePasswordSection />
       <SignOutSection />
     </div>

@@ -9,8 +9,10 @@ export const TransactionSchema = z.object({
   description: z.string().min(1).max(255),
   type: TransactionTypeSchema,
   date: z.string().datetime(),
-  userId: z.string(),
-  categoryId: z.string().nullable(),
+  accountId: z.string(),
+  categoryIds: z.array(z.string()),
+  createdById: z.string(),
+  createdByName: z.string(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
 });
@@ -22,7 +24,7 @@ export const CreateTransactionSchema = z.object({
   description: z.string().min(1).max(255),
   type: TransactionTypeSchema,
   date: z.string().datetime(),
-  categoryId: z.string().optional().nullable(),
+  categoryIds: z.array(z.string()).optional(),
 });
 
 export type CreateTransaction = z.infer<typeof CreateTransactionSchema>;

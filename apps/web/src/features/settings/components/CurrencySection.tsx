@@ -38,7 +38,9 @@ export function CurrencySection({ initialCurrency }: { initialCurrency: string }
     }
   };
 
-  const buttonLabel = saving ? STRINGS.savePending : saved ? STRINGS.saveDone : STRINGS.saveIdle;
+  let buttonLabel = STRINGS.saveIdle;
+  if (saving) buttonLabel = STRINGS.savePending;
+  else if (saved) buttonLabel = STRINGS.saveDone;
 
   return (
     <Card>
@@ -52,7 +54,7 @@ export function CurrencySection({ initialCurrency }: { initialCurrency: string }
             id="currency"
             value={currency}
             onChange={(e) => setCurrency(e.target.value)}
-            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm text-foreground shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring dark:[color-scheme:dark]"
           >
             {CURRENCIES.map((c) => (
               <option key={c.value} value={c.value}>
@@ -68,7 +70,7 @@ export function CurrencySection({ initialCurrency }: { initialCurrency: string }
           </p>
         )}
 
-        <Button onClick={() => void handleSave()} disabled={saving} className="self-start">
+        <Button onClick={() => { void handleSave(); }} disabled={saving} className="self-start">
           {buttonLabel}
         </Button>
       </CardContent>

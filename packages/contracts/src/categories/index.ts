@@ -5,7 +5,7 @@ export const CategorySchema = z.object({
   name: z.string().min(1).max(100),
   color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).nullable(),
   icon: z.string().max(10).nullable(),
-  userId: z.string(),
+  accountId: z.string(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
 });
