@@ -17,7 +17,7 @@ interface DateRangeFilterProps {
   onChange: (range: DateRange) => void;
 }
 
-type Preset = 'day' | 'week' | 'month' | 'ytd' | 'custom';
+type Preset = 'today' | 'week' | 'mtd' | 'last-month' | 'ytd' | 'custom';
 
 function getPresetRange(preset: Exclude<Preset, 'custom'>): DateRange {
   const today = new Date();
@@ -25,7 +25,7 @@ function getPresetRange(preset: Exclude<Preset, 'custom'>): DateRange {
   const m = today.getMonth();
   const d = today.getDate();
 
-  if (preset === 'day') {
+  if (preset === 'today') {
     return {
       from: new Date(y, m, d, 0, 0, 0, 0).toISOString(),
       to: new Date(y, m, d, 23, 59, 59, 999).toISOString(),
@@ -41,29 +41,38 @@ function getPresetRange(preset: Exclude<Preset, 'custom'>): DateRange {
     return { from: monday.toISOString(), to: sunday.toISOString() };
   }
 
-  if (preset === 'ytd') {
+  if (preset === 'mtd') {
     return {
-      from: new Date(y, 0, 1, 0, 0, 0, 0).toISOString(),
+      from: startOfMonth().toISOString(),
       to: new Date(y, m, d, 23, 59, 59, 999).toISOString(),
     };
   }
 
+  if (preset === 'last-month') {
+    const lastMonthDate = new Date(y, m - 1, 1);
+    return {
+      from: startOfMonth(lastMonthDate).toISOString(),
+      to: endOfMonth(lastMonthDate).toISOString(),
+    };
+  }
+
   return {
-    from: startOfMonth().toISOString(),
-    to: endOfMonth().toISOString(),
+    from: new Date(y, 0, 1, 0, 0, 0, 0).toISOString(),
+    to: new Date(y, m, d, 23, 59, 59, 999).toISOString(),
   };
 }
 
 const PRESETS: { id: Preset; label: string }[] = [
-  { id: 'day', label: 'Day' },
+  { id: 'today', label: 'Today' },
   { id: 'week', label: 'Week' },
-  { id: 'month', label: 'Month' },
+  { id: 'mtd', label: 'MTD' },
+  { id: 'last-month', label: 'Last Month' },
   { id: 'ytd', label: 'YTD' },
   { id: 'custom', label: 'Custom' },
 ];
 
 export function DateRangeFilter({ onChange }: DateRangeFilterProps) {
-  const [activePreset, setActivePreset] = useState<Preset>('month');
+  const [activePreset, setActivePreset] = useState<Preset>('mtd');
   const [customDates, setCustomDates] = useState({ from: '', to: '' });
 
   function handlePreset(preset: Preset) {

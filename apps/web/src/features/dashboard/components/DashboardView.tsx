@@ -1,6 +1,6 @@
 'use client';
 
-import { endOfMonth, startOfMonth } from '@repo/utils/date';
+import { startOfMonth } from '@repo/utils/date';
 import { useState } from 'react';
 
 import { useDashboardStats } from '../hooks/useDashboardStats';
@@ -8,9 +8,10 @@ import { DateRangeFilter } from './DateRangeFilter';
 import { FinancialSummary } from './FinancialSummary';
 import { Insights } from './Insights';
 
+const now = new Date();
 const defaultRange = {
   from: startOfMonth().toISOString(),
-  to: endOfMonth().toISOString(),
+  to: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999).toISOString(),
 };
 
 export function DashboardView() {

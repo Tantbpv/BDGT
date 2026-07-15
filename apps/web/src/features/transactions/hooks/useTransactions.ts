@@ -1,13 +1,19 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import type { CreateTransaction, Transaction } from '@/features/transactions/types';
 import { apiClient } from '@/shared/lib/api-client';
 import { queryKeys } from '@/shared/lib/query-keys';
 
-export function useTransactions() {
-  return useQuery({
+const PAGE_SIZE = 20;
+
+export function useInfiniteTransactions() {
+  return useInfiniteQuery({
     queryKey: queryKeys.transactions(),
-    queryFn: () => apiClient.get<Transaction[]>('/api/v1/transactions'),
+    queryFn: ({ pageParam }: { pageParam: number }) =>
+      apiClient.get<Transaction[]>(`/api/v1/transactions?page=${pageParam}&limit=${PAGE_SIZE}`),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages) =>
+      lastPage.length === PAGE_SIZE ? allPages.length + 1 : undefined,
   });
 }
 

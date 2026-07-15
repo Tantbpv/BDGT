@@ -17,3 +17,4 @@ Post MVP stage:
 - Add Assistance service with AI API integration. Add Analytic page with forecasts and budget analytics (regular/unregular spending, cost optimization, budgeting, etc.)
 - Improve AWS infrastructure and deploy process
 - Account management and shared accounts
+- Import Transactions as CSV or JSON file
