@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [master]
+    branches: [master, dev]
   pull_request:
-    branches: [master]
+    branches: [master, dev]
 
 env:
   DATABASE_URL: postgresql://bdgt:bdgt_password@localhost:5432/bdgt
@@ -12,6 +12,7 @@ env:
   JWT_REFRESH_SECRET: ci-secret-refresh-min-32-chars-bbbbbbbbb
 
 jobs:
+  # ── Install & cache ───────────────────────────────────────────────────────
   dependencies:
     name: Dependencies
     runs-on: ubuntu-latest
@@ -31,15 +32,10 @@ jobs:
       - name: Generate Prisma client
         run: pnpm db:generate
 
-      - name: Cache node_modules
-        uses: actions/cache/save@v4
-        with:
-          path: |
-            node_modules
-            apps/*/node_modules
-            packages/*/node_modules
-          key: node-modules-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+      - name: Save node_modules cache
+        uses: ./.github/actions/save-node-modules
 
+  # ── Lint ──────────────────────────────────────────────────────────────────
   lint:
     name: Lint
     needs: dependencies
@@ -54,18 +50,11 @@ jobs:
           node-version: "24"
           cache: "pnpm"
 
-      - name: Restore node_modules
-        uses: actions/cache/restore@v4
-        with:
-          path: |
-            node_modules
-            apps/*/node_modules
-            packages/*/node_modules
-          key: node-modules-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+      - uses: ./.github/actions/restore-node-modules
 
-      - name: Lint
-        run: pnpm lint
+      - run: pnpm lint
 
+  # ── Type check ────────────────────────────────────────────────────────────
   type-check:
     name: Type Check
     needs: dependencies
@@ -80,18 +69,11 @@ jobs:
           node-version: "24"
           cache: "pnpm"
 
-      - name: Restore node_modules
-        uses: actions/cache/restore@v4
-        with:
-          path: |
-            node_modules
-            apps/*/node_modules
-            packages/*/node_modules
-          key: node-modules-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+      - uses: ./.github/actions/restore-node-modules
 
-      - name: Type check
-        run: pnpm type-check
+      - run: pnpm type-check
 
+  # ── Test ──────────────────────────────────────────────────────────────────
   test:
     name: Test
     needs: [lint, type-check]
@@ -106,18 +88,11 @@ jobs:
           node-version: "24"
           cache: "pnpm"
 
-      - name: Restore node_modules
-        uses: actions/cache/restore@v4
-        with:
-          path: |
-            node_modules
-            apps/*/node_modules
-            packages/*/node_modules
-          key: node-modules-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+      - uses: ./.github/actions/restore-node-modules
 
-      - name: Test
-        run: pnpm test
+      - run: pnpm test
 
+  # ── Build ─────────────────────────────────────────────────────────────────
   build:
     name: Build
     needs: test
@@ -132,18 +107,11 @@ jobs:
           node-version: "24"
           cache: "pnpm"
 
-      - name: Restore node_modules
-        uses: actions/cache/restore@v4
-        with:
-          path: |
-            node_modules
-            apps/*/node_modules
-            packages/*/node_modules
-          key: node-modules-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+      - uses: ./.github/actions/restore-node-modules
 
-      - name: Build
-        run: pnpm build
+      - run: pnpm build
 
+  # ── Deploy ────────────────────────────────────────────────────────────────
   deploy:
     name: Deploy
     needs: build
