@@ -1,0 +1,61 @@
+name: bdgt
+
+# All services share one internal bridge network; only nginx is exposed to the host.
+# APP_IMAGE and MIGRATE_IMAGE are written to .env by GitHub Actions on every deploy.
+
+services:
+  db:
+    image: postgres:16-alpine
+    volumes:
+      - /data/postgres:/var/lib/postgresql/data   # bind-mount → persistent EBS volume
+    env_file: .env                                # expects POSTGRES_USER, POSTGRES_DB, POSTGRES_PASSWORD
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bdgt"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - internal
+
+  migrate:
+    image: ${MIGRATE_IMAGE}
+    env_file: .env                                # needs DATABASE_URL
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+    networks:
+      - internal
+
+  web:
+    image: ${APP_IMAGE}
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    networks:
+      - internal
+
+  nginx:
+    image: nginx:1.27-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.prod.conf:/etc/nginx/conf.d/default.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro      # Let's Encrypt certs (created by Certbot)
+      - /var/www/certbot:/var/www/certbot:ro       # ACME HTTP-01 challenge dir
+    depends_on:
+      - web
+    restart: unless-stopped
+    networks:
+      - internal
+
+networks:
+  internal:
+    driver: bridge

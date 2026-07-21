@@ -1,0 +1,43 @@
+# Copy this file to terraform.tfvars and fill in real values.
+# terraform.tfvars is gitignored — never commit it.
+
+# ── AWS ───────────────────────────────────────────────────────────────────────
+aws_region  = "eu-central-1"
+environment = "production"
+
+# ── Network ───────────────────────────────────────────────────────────────────
+# Your public IP — find it at https://checkip.amazonaws.com — append /32
+your_ip_cidr = "203.0.113.42/32"
+
+# ── EC2 ───────────────────────────────────────────────────────────────────────
+ec2_instance_type = "t3.micro"
+
+# Name of the key pair created in AWS Console → EC2 → Key Pairs (no .pem extension)
+ec2_key_pair_name = "bdgt-keypair"
+
+# ── EBS data volume ───────────────────────────────────────────────────────────
+# Mounted at /data/postgres on the EC2 instance; used by the Postgres container
+ebs_data_volume_size = 20
+
+# ── Database (Postgres running in Docker) ─────────────────────────────────────
+db_name     = "bdgt"
+db_username = "bdgt"
+db_password = "CHANGE_ME_strong_password_min8chars"
+# DATABASE_URL written to EC2: postgresql://bdgt:PASSWORD@db:5432/bdgt
+# "db" is the Docker Compose service name — resolved by Docker's internal DNS
+
+# ── Application secrets ───────────────────────────────────────────────────────
+# Must be at least 32 characters (enforced by Terraform + packages/config/src/env.ts)
+jwt_access_secret  = "CHANGE_ME_at_least_32_characters_long_access_secret"
+jwt_refresh_secret = "CHANGE_ME_at_least_32_characters_long_refresh_secret"
+
+jwt_access_expires_in  = "15m"
+jwt_refresh_expires_in = "7d"
+
+log_level = "info"
+
+# ── CI/CD ─────────────────────────────────────────────────────────────────────
+# GitHub repository in "owner/name" format.
+# Scopes the OIDC trust so only workflows from this repo can assume the
+# GitHub Actions IAM role and push to ECR.
+github_repo = "YourOrg/BDGT"
