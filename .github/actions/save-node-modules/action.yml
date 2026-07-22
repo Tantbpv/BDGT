@@ -4,7 +4,7 @@ description: 'Saves pnpm node_modules to GitHub Actions cache (monorepo)'
 runs:
   using: composite
   steps:
-    - uses: actions/cache/save@v4
+    - uses: actions/cache/save@v6
       with:
         path: |
           node_modules
