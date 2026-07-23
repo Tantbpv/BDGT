@@ -118,5 +118,5 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     steps:
-      - name: Deploy (mock)
+      - name: Deploy
         run: echo "Deploying to production — approval granted."
