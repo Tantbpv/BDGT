@@ -7,7 +7,7 @@ services:
   db:
     image: postgres:16-alpine
     volumes:
-      - /data/postgres:/var/lib/postgresql/data   # bind-mount → persistent EBS volume
+      - /data/postgres/pgdata:/var/lib/postgresql/data   # bind-mount → persistent EBS volume (subdirectory avoids lost+found conflict)
     env_file: .env                                # expects POSTGRES_USER, POSTGRES_DB, POSTGRES_PASSWORD
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U bdgt"]

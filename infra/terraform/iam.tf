@@ -91,6 +91,33 @@ resource "aws_iam_role" "github_actions" {
   })
 }
 
+resource "aws_iam_role_policy" "github_actions_sg" {
+  name = "bdgt-github-actions-sg"
+  role = aws_iam_role.github_actions.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = [
+          "ec2:DescribeSecurityGroups",
+          "ec2:DescribeInstances"
+        ]
+        Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "ec2:AuthorizeSecurityGroupIngress",
+          "ec2:RevokeSecurityGroupIngress"
+        ]
+        Resource = aws_security_group.ec2.arn
+      }
+    ]
+  })
+}
+
 resource "aws_iam_role_policy" "github_actions_ecr" {
   name = "bdgt-github-actions-ecr"
   role = aws_iam_role.github_actions.id

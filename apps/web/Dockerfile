@@ -52,10 +52,13 @@ RUN pnpm --filter @repo/web run build
 FROM base AS migrator
 WORKDIR /app
 
+# pnpm puts prisma's binary in the workspace package's own node_modules, not root.
 COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/packages/database/node_modules ./packages/database/node_modules
 COPY packages/database/prisma ./packages/database/prisma
+COPY packages/database/prisma.config.ts ./packages/database/prisma.config.ts
 
-CMD ["node_modules/.bin/prisma", "migrate", "deploy", "--schema", "packages/database/prisma/schema.prisma"]
+CMD ["packages/database/node_modules/.bin/prisma", "migrate", "deploy", "--config", "packages/database/prisma.config.ts"]
 
 # ── Stage: runner ─────────────────────────────────────────────────────────────
 FROM node:22-alpine AS runner

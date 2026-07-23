@@ -52,7 +52,7 @@ resource "aws_instance" "app" {
 
   root_block_device {
     volume_type           = "gp3"
-    volume_size           = 20
+    volume_size           = 30
     delete_on_termination = true
     encrypted             = true
   }
@@ -105,8 +105,10 @@ resource "aws_instance" "app" {
     # Persist mount across reboots; nofail prevents boot hang if volume is absent
     echo "$DATA_DEVICE /data/postgres ext4 defaults,nofail 0 2" >> /etc/fstab
 
-    # UID 999 = postgres user inside the official postgres Docker image
-    chown 999:999 /data/postgres
+    # Use a subdirectory so lost+found (created by mkfs) doesn't block postgres initdb.
+    # UID 999 = postgres user inside the official postgres Docker image.
+    mkdir -p /data/postgres/pgdata
+    chown 999:999 /data/postgres/pgdata
 
     # ── App directory ─────────────────────────────────────────────────────────
     # .env and compose files are written by GitHub Actions on first deploy.

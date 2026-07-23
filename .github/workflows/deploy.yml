@@ -84,10 +84,35 @@ jobs:
         id: ecr-login
         uses: aws-actions/amazon-ecr-login@v2
 
+      - name: Get EC2 host
+        id: ec2
+        run: |
+          HOST=$(aws ec2 describe-instances \
+            --filters "Name=tag:Name,Values=bdgt-app" "Name=instance-state-name,Values=running" \
+            --query 'Reservations[0].Instances[0].PublicDnsName' \
+            --output text)
+          echo "host=$HOST" >> $GITHUB_OUTPUT
+
+      - name: Whitelist runner IP for SSH
+        id: sg
+        run: |
+          IP=$(curl -s https://checkip.amazonaws.com)/32
+          SG_ID=$(aws ec2 describe-security-groups \
+            --filters "Name=group-name,Values=bdgt-ec2-sg" \
+            --query 'SecurityGroups[0].GroupId' \
+            --output text)
+          aws ec2 authorize-security-group-ingress \
+            --group-id "$SG_ID" \
+            --protocol tcp \
+            --port 22 \
+            --cidr "$IP"
+          echo "ip=$IP"       >> $GITHUB_OUTPUT
+          echo "sg_id=$SG_ID" >> $GITHUB_OUTPUT
+
       - name: Copy compose files to EC2
         uses: appleboy/scp-action@v1
         with:
-          host: ${{ vars.EC2_HOST }}
+          host: ${{ steps.ec2.outputs.host }}
           username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY }}
           source: "infra/compose/docker-compose.prod.yml,infra/compose/nginx.prod.conf"
@@ -104,7 +129,7 @@ jobs:
           JWT_ACCESS_SECRET: ${{ secrets.JWT_ACCESS_SECRET }}
           JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}
         with:
-          host: ${{ vars.EC2_HOST }}
+          host: ${{ steps.ec2.outputs.host }}
           username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY }}
           envs: ECR_REGISTRY,SHA,AWS_REGION,DB_PASSWORD,JWT_ACCESS_SECRET,JWT_REFRESH_SECRET
@@ -134,3 +159,12 @@ jobs:
             cd /home/ec2-user/bdgt
             docker compose -f docker-compose.prod.yml pull
             docker compose -f docker-compose.prod.yml up -d
+
+      - name: Revoke runner SSH access
+        if: always() && steps.sg.outputs.sg_id != ''
+        run: |
+          aws ec2 revoke-security-group-ingress \
+            --group-id "${{ steps.sg.outputs.sg_id }}" \
+            --protocol tcp \
+            --port 22 \
+            --cidr "${{ steps.sg.outputs.ip }}"

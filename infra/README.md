@@ -8,7 +8,7 @@
   Internet                │                                                  │
   :80 / :443  ──────────► │  ┌──────────┐    ┌─────────────────────────┐   │
                           │  │  nginx   │───►│  web (Next.js :3000)    │   │
-  :22 (your IP only)  ──► │  └──────────┘    └────────────┬────────────┘   │
+  :22 (your IP + CI) ──► │  └──────────┘    └────────────┬────────────┘   │
                           │                               │                  │
                           │                  ┌────────────▼────────────┐   │
                           │                  │  db (Postgres :5432)    │   │
@@ -26,7 +26,7 @@
 - **migrate** — one-shot Prisma migration runner, exits after deploy
 - **db** — Postgres 16, data persisted on a dedicated EBS volume
 - **ECR** — two private repositories: `bdgt-web`, `bdgt-migrate`
-- **GitHub Actions** — builds images on push to `main`, deploys to EC2 via SSH
+- **GitHub Actions** — builds images on push to `master`, deploys to EC2 via SSH; runner IP is dynamically whitelisted for the duration of the deploy then revoked
 
 **Secrets flow (Option B):** All secrets live in GitHub Secrets. On every deploy the Actions workflow writes a fresh `.env` to the EC2 instance. No secrets in Terraform state or git.
 
@@ -96,9 +96,10 @@ Go to your repo → **Settings**.
 
 | Name | Value |
 |---|---|
-| `EC2_HOST` | EC2 public IP from Terraform output |
 | `AWS_ROLE_ARN` | `github_actions_role_arn` from Terraform output |
 | `AWS_REGION` | `eu-central-1` |
+
+> `EC2_HOST` is no longer needed — the deploy workflow looks up the instance dynamically by the `bdgt-app` tag.
 
 ### 6. First deploy
 
@@ -106,9 +107,11 @@ Push to `main` (or trigger manually via **Actions → Deploy → Run workflow**)
 
 The workflow will:
 1. Build and push both Docker images to ECR
-2. SCP the compose + nginx config to the EC2
-3. Write `.env` with all secrets
-4. Pull images and start containers
+2. Look up the EC2 instance by tag and temporarily whitelist the runner IP in the security group
+3. SCP the compose + nginx config to the EC2
+4. Write `.env` with all secrets
+5. Pull images and start containers
+6. Revoke the runner IP from the security group
 
 After ~5 minutes, the app is live at `http://<ec2-public-ip>`.
 
