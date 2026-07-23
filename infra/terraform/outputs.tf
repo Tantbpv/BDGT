@@ -1,16 +1,16 @@
 output "ec2_public_ip" {
-  description = "Public IP of the EC2 instance. Use for DNS and SSH."
-  value       = aws_instance.app.public_ip
+  description = "Elastic IP of the EC2 instance. Use for DNS A records and SSH."
+  value       = aws_eip.app.public_ip
 }
 
 output "ec2_public_dns" {
-  description = "Public DNS name of the EC2 instance."
-  value       = aws_instance.app.public_dns
+  description = "Public DNS name of the Elastic IP."
+  value       = aws_eip.app.public_dns
 }
 
 output "ssh_command" {
   description = "Ready-to-run SSH command to connect to the EC2 instance."
-  value       = "ssh -i ~/.ssh/${var.ec2_key_pair_name}.pem ec2-user@${aws_instance.app.public_ip}"
+  value       = "ssh -i ~/.ssh/${var.ec2_key_pair_name}.pem ec2-user@${aws_eip.app.public_ip}"
 }
 
 output "ecr_web_url" {

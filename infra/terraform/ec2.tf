@@ -40,6 +40,17 @@ resource "aws_volume_attachment" "data" {
   force_detach = false
 }
 
+# ── Elastic IP ───────────────────────────────────────────────────────────────
+
+resource "aws_eip" "app" {
+  instance = aws_instance.app.id
+  domain   = "vpc"
+
+  tags = {
+    Name = "bdgt-eip"
+  }
+}
+
 # ── EC2 Instance ──────────────────────────────────────────────────────────────
 
 resource "aws_instance" "app" {

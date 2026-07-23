@@ -183,6 +183,156 @@ No SSH access required for secret rotation.
 
 ---
 
+## Troubleshooting
+
+### Common operations
+
+#### SSH into the instance
+
+```bash
+ssh -i ~/.ssh/bdgt-keypair.pem ec2-user@<ec2-ip>
+```
+
+Get the current public IP:
+```bash
+aws ec2 describe-instances \
+  --filters "Name=tag:Name,Values=bdgt-app" "Name=instance-state-name,Values=running" \
+  --query 'Reservations[0].Instances[0].PublicIpAddress' \
+  --output text
+```
+
+#### Check container status
+
+```bash
+docker compose -f ~/bdgt/docker-compose.prod.yml ps
+```
+
+Expected healthy state:
+
+| Container | Status |
+|---|---|
+| `bdgt-db-1` | `running (healthy)` |
+| `bdgt-migrate-1` | `exited (0)` |
+| `bdgt-web-1` | `running` |
+| `bdgt-nginx-1` | `running` |
+
+#### Tail logs
+
+```bash
+# Next.js app
+docker compose -f ~/bdgt/docker-compose.prod.yml logs -f web
+
+# Migration output (one-shot — use logs, not -f)
+docker compose -f ~/bdgt/docker-compose.prod.yml logs migrate
+
+# nginx access/error log
+docker compose -f ~/bdgt/docker-compose.prod.yml logs -f nginx
+
+# Postgres
+docker compose -f ~/bdgt/docker-compose.prod.yml logs -f db
+```
+
+#### Test HTTP connectivity
+
+```bash
+# From your local machine
+curl -I http://<ec2-public-ip>
+
+# From inside the EC2 (bypasses security group)
+curl -I http://localhost
+```
+
+#### Restart a single service
+
+```bash
+docker compose -f ~/bdgt/docker-compose.prod.yml restart web
+```
+
+#### Re-run migrations manually
+
+```bash
+docker compose -f ~/bdgt/docker-compose.prod.yml run --rm migrate
+```
+
+#### Verify EBS data volume is mounted
+
+```bash
+df -h /data/postgres
+ls -la /data/postgres/pgdata
+```
+
+---
+
+### Known issues and fixes
+
+#### Postgres container unhealthy — `lost+found` in data directory
+
+**Symptom:** `dependency failed to start: container bdgt-db-1 is unhealthy`
+
+**Cause:** The EBS volume is formatted with ext4, which creates a `lost+found` directory at the mount root (`/data/postgres`). Postgres's `initdb` refuses to initialise a directory that is a direct mount point.
+
+**Fix:** Postgres data lives in a subdirectory (`/data/postgres/pgdata`) rather than at the mount root. If you hit this on an existing instance where the wrong path was used:
+
+```bash
+sudo mkdir -p /data/postgres/pgdata
+sudo chown 999:999 /data/postgres/pgdata
+sed -i 's|/data/postgres:/var/lib/postgresql/data|/data/postgres/pgdata:/var/lib/postgresql/data|' ~/bdgt/docker-compose.prod.yml
+docker compose -f ~/bdgt/docker-compose.prod.yml down
+docker compose -f ~/bdgt/docker-compose.prod.yml up -d
+```
+
+---
+
+#### Migrate container exits with `MODULE_NOT_FOUND` for prisma
+
+**Symptom:** `Error: Cannot find module '/app/node_modules/.bin/prisma'`
+
+**Cause:** In a pnpm workspace, the `prisma` CLI binary lives in the workspace package's own `node_modules` (`packages/database/node_modules/.bin/prisma`), not at the monorepo root. The migrator Docker image was only copying the root `node_modules`.
+
+**Fix:** Already resolved in the Dockerfile — the migrator stage now copies `packages/database/node_modules` and uses the correct binary path.
+
+---
+
+#### Migrate container exits with `datasource.url property is required`
+
+**Symptom:** `Error: The datasource.url property is required in your Prisma config file when using prisma migrate deploy.`
+
+**Cause:** Prisma 7 reads datasource config from `prisma.config.ts`, not from the schema. The migrator image was not copying that file, so the CLI had no URL.
+
+**Fix:** Already resolved — the migrator stage now copies `packages/database/prisma.config.ts` and passes `--config packages/database/prisma.config.ts` to the CLI.
+
+---
+
+#### GitHub Actions SSH timeout
+
+**Symptom:** `dial tcp <ec2-ip>:22: i/o timeout` in the deploy workflow.
+
+**Cause:** The EC2 security group restricts SSH to a static IP. GitHub Actions runners use dynamic IPs that are not whitelisted.
+
+**Fix:** Already resolved — the deploy workflow dynamically whitelists the runner IP before the SSH steps and revokes it afterwards (`Whitelist runner IP for SSH` / `Revoke runner SSH access` steps).
+
+---
+
+#### Terraform apply fails — root volume too small
+
+**Symptom:** `Volume of size 20GB is smaller than snapshot, expect size >= 30GB`
+
+**Cause:** The latest Amazon Linux 2023 AMI snapshot requires a minimum 30 GB root volume.
+
+**Fix:** Already resolved — `ec2.tf` sets `volume_size = 30`.
+
+---
+
+#### UnauthorizedOperation: ec2:DescribeInstances
+
+**Symptom:** `is not authorized to perform: ec2:DescribeInstances` in the `Get EC2 host` workflow step.
+
+**Cause:** The GitHub Actions IAM role was missing `ec2:DescribeInstances` (required to look up the EC2 instance by tag).
+
+**Fix:** Already resolved — `iam.tf` includes `ec2:DescribeInstances` in the `github_actions_sg` policy.
+
+---
+
 ## Remote Terraform state (optional but recommended)
 
 Uncomment the `backend "s3"` block in `infra/terraform/main.tf` after creating:
