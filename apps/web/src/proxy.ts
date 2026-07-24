@@ -33,7 +33,8 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
 
   logger.debug({ method, path }, 'attempting silent token refresh');
   // Access token expired but refresh token present — attempt silent refresh
-  const refreshUrl = new URL('/api/v1/auth/refresh', request.url);
+  const internalBase = process.env.NEXT_INTERNAL_URL ?? request.nextUrl.origin;
+  const refreshUrl = new URL('/api/v1/auth/refresh', internalBase);
   const refreshResponse = await fetch(refreshUrl, {
     method: 'POST',
     headers: { cookie: request.headers.get('cookie') ?? '' },

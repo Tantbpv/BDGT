@@ -15,7 +15,7 @@
                           │                  └────────────┬────────────┘   │
                           │                               │                  │
                           │                  ┌────────────▼────────────┐   │
-                          │                  │  EBS 20 GB (/data/postgres) │ │
+                          │                  │  EBS 20 GB (/data/postgres)  │ │
                           └──────────────────┴─────────────────────────────┘
 ```
 
@@ -125,27 +125,25 @@ Once you have a domain pointing to the EC2 IP:
 # SSH to the instance
 ssh -i ~/.ssh/bdgt-keypair.pem ec2-user@<ec2-ip>
 
-# Install Certbot
-sudo dnf install -y certbot
-
-# Obtain certificate (nginx must be running and port 80 must be accessible)
-sudo certbot certonly --webroot \
-  -w /var/www/certbot \
+# Obtain certificate via Certbot Docker image (nginx must be running, port 80 accessible)
+# Certs are stored on the EBS data volume (/data/postgres/letsencrypt) and survive instance replacement.
+sudo docker run --rm \
+  -v /data/postgres/letsencrypt:/etc/letsencrypt \
+  -v /var/www/certbot:/var/www/certbot \
+  certbot/certbot certonly \
+  --webroot --webroot-path /var/www/certbot \
   -d your-domain.com \
   --email you@example.com \
-  --agree-tos --no-eff-email
+  --agree-tos --non-interactive
 
-# Edit nginx config: uncomment the HTTPS server block and fill in your domain
-vi ~/bdgt/nginx.prod.conf
-
-# Reload nginx
+# Restart nginx to load the certificate
 docker compose -f ~/bdgt/docker-compose.prod.yml restart nginx
 ```
 
 For auto-renewal, add a cron job:
 
 ```bash
-echo "0 3 * * * certbot renew --quiet && docker compose -f /home/ec2-user/bdgt/docker-compose.prod.yml restart nginx" \
+echo "0 3 * * * docker run --rm -v /data/postgres/letsencrypt:/etc/letsencrypt -v /var/www/certbot:/var/www/certbot certbot/certbot renew --quiet && docker compose -f /home/ec2-user/bdgt/docker-compose.prod.yml restart nginx" \
   | sudo crontab -
 ```
 

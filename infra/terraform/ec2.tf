@@ -121,6 +121,9 @@ resource "aws_instance" "app" {
     mkdir -p /data/postgres/pgdata
     chown 999:999 /data/postgres/pgdata
 
+    # Persist Let's Encrypt certs on EBS so they survive instance replacement.
+    mkdir -p /data/postgres/letsencrypt
+
     # ── App directory ─────────────────────────────────────────────────────────
     # .env and compose files are written by GitHub Actions on first deploy.
     mkdir -p /home/ec2-user/bdgt

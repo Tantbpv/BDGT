@@ -153,12 +153,14 @@ jobs:
               echo  "LOG_LEVEL=info"
               echo  "APP_IMAGE=${ECR_REGISTRY}/bdgt-web:${SHA}"
               echo  "MIGRATE_IMAGE=${ECR_REGISTRY}/bdgt-migrate:${SHA}"
+              echo  "NEXT_INTERNAL_URL=http://localhost:3000"
             } > /home/ec2-user/bdgt/.env
             chmod 600 /home/ec2-user/bdgt/.env
 
             cd /home/ec2-user/bdgt
             docker compose -f docker-compose.prod.yml pull
             docker compose -f docker-compose.prod.yml up -d
+            docker compose -f docker-compose.prod.yml restart nginx
 
       - name: Revoke runner SSH access
         if: always() && steps.sg.outputs.sg_id != ''
