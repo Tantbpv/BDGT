@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 import { useCurrentUser } from '@/features/auth/hooks/useAuth';
+import { ActiveAccountName } from '@/components/ActiveAccountName';
 
 export function AppHeader() {
   const { data } = useCurrentUser();
@@ -19,12 +20,15 @@ export function AppHeader() {
   return (
     <header className="sticky top-0 z-10 border-b border-border bg-background/80 backdrop-blur-sm">
       <div className="mx-auto flex h-12 max-w-5xl items-center justify-between px-6">
-        <Link
-          href={isAuthenticated ? '/transactions' : '/login'}
-          className="text-sm font-semibold tracking-tight"
-        >
-          BDGT
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href={isAuthenticated ? '/transactions' : '/login'}
+            className="text-sm font-semibold tracking-tight"
+          >
+            BDGT
+          </Link>
+          {isAuthenticated && <ActiveAccountName />}
+        </div>
         <nav className="flex items-center gap-1">
           {isAuthenticated ? (
             <>
