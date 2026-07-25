@@ -2,6 +2,7 @@ import { formatCurrency } from '@repo/utils/money';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { DashboardStats } from '@/features/dashboard/types';
+import type { Currency } from '@/features/settings/types';
 
 interface StatCardProps {
   title: string;
@@ -30,9 +31,10 @@ function StatCard({ title, value, isLoading, colorClass }: StatCardProps) {
 interface FinancialSummaryProps {
   stats: DashboardStats | undefined;
   isLoading: boolean;
+  currency?: Currency;
 }
 
-export function FinancialSummary({ stats, isLoading }: FinancialSummaryProps) {
+export function FinancialSummary({ stats, isLoading, currency }: FinancialSummaryProps) {
   const balanceColor =
     !isLoading && stats && parseFloat(stats.balance) < 0 ? 'text-destructive' : 'text-green-500';
 
@@ -40,19 +42,19 @@ export function FinancialSummary({ stats, isLoading }: FinancialSummaryProps) {
     <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
       <StatCard
         title="Income"
-        value={formatCurrency(stats?.totalIncome ?? '0', 'EUR')}
+        value={formatCurrency(stats?.totalIncome ?? '0', currency)}
         isLoading={isLoading}
         colorClass="text-green-500"
       />
       <StatCard
         title="Expenses"
-        value={formatCurrency(stats?.totalExpenses ?? '0', 'EUR')}
+        value={formatCurrency(stats?.totalExpenses ?? '0', currency)}
         isLoading={isLoading}
         colorClass="text-destructive"
       />
       <StatCard
         title="Balance"
-        value={formatCurrency(stats?.balance ?? '0', 'EUR')}
+        value={formatCurrency(stats?.balance ?? '0', currency)}
         isLoading={isLoading}
         colorClass={balanceColor}
       />

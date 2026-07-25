@@ -43,7 +43,7 @@ export function CurrencySection() {
   else if (saved) buttonLabel = STRINGS.saveDone;
 
   return (
-    <Card className="hidden">
+    <Card>
       <CardHeader>
         <CardTitle>{STRINGS.title}</CardTitle>
       </CardHeader>

@@ -3,6 +3,8 @@
 import { startOfMonth } from '@repo/utils/date';
 import { useState } from 'react';
 
+import { useSettings } from '@/features/settings/hooks/useSettings';
+
 import { useDashboardStats } from '../hooks/useDashboardStats';
 import { DateRangeFilter } from './DateRangeFilter';
 import { FinancialSummary } from './FinancialSummary';
@@ -17,6 +19,8 @@ const defaultRange = {
 export function DashboardView() {
   const [dateRange, setDateRange] = useState(defaultRange);
   const { data: stats, isPending, isError, error } = useDashboardStats(dateRange);
+  const { data: settings } = useSettings();
+  const currency = settings?.currency;
 
   return (
     <div className="flex w-full max-w-3xl flex-col gap-6">
@@ -27,7 +31,7 @@ export function DashboardView() {
           {error.message}
         </p>
       )}
-      <FinancialSummary stats={stats} isLoading={isPending} />
+      <FinancialSummary stats={stats} isLoading={isPending} currency={currency} />
       <Insights />
     </div>
   );

@@ -8,6 +8,7 @@ import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { useSettings } from '@/features/settings/hooks/useSettings';
 
 import { useDeleteTransaction, useTransaction } from '../hooks/useTransactions';
 
@@ -47,6 +48,8 @@ export function TransactionDetailView({ id }: Props) {
   const router = useRouter();
   const { data: transaction, isPending, isError, error } = useTransaction(id);
   const deleteTransaction = useDeleteTransaction();
+  const { data: settings } = useSettings();
+  const currency = settings?.currency;
   const [deleteState, setDeleteState] = useState<DeleteState>('idle');
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
@@ -105,7 +108,7 @@ export function TransactionDetailView({ id }: Props) {
                 className={`font-medium ${transaction.type === 'INCOME' ? 'text-green-500' : 'text-destructive'}`}
               >
                 {transaction.type === 'INCOME' ? '+' : '−'}
-                {formatCurrency(transaction.amount)}
+                {formatCurrency(transaction.amount, currency)}
               </span>
             </div>
             <div className="flex justify-between text-sm">
