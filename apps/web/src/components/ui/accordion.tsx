@@ -17,7 +17,7 @@ export function Accordion({ label, defaultOpen = false, children }: Props) {
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="text-muted-foreground hover:text-foreground flex w-full items-center justify-between px-3 py-2 text-sm transition-colors"
+        className="text-muted-foreground hover:text-foreground flex w-full items-center justify-between px-3 py-3 text-sm transition-colors"
         aria-expanded={open}
       >
         {label}

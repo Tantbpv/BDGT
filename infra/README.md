@@ -252,6 +252,40 @@ docker compose -f ~/bdgt/docker-compose.prod.yml restart web
 docker compose -f ~/bdgt/docker-compose.prod.yml run --rm migrate
 ```
 
+#### Connect to the database (psql)
+
+```bash
+docker compose -f ~/bdgt/docker-compose.prod.yml exec db psql -U bdgt -d bdgt
+```
+
+Useful queries once inside psql:
+
+```sql
+-- List all users
+SELECT id, email, "createdAt" FROM "User";
+
+-- List all accounts for a user
+SELECT a.id, a.name, a.balance, a.currency
+FROM "Account" a
+WHERE a."userId" = '<user-id>';
+
+-- List recent transactions
+SELECT t.id, t.amount, t.type, t.date, c.name AS category
+FROM "Transaction" t
+LEFT JOIN "_TransactionCategories" tc ON tc."A" = t.id
+LEFT JOIN "Category" c ON c.id = tc."B"
+ORDER BY t.date DESC
+LIMIT 20;
+
+-- Count rows per table (quick health check)
+SELECT 'User' AS table, COUNT(*) FROM "User"
+UNION ALL SELECT 'Account', COUNT(*) FROM "Account"
+UNION ALL SELECT 'Transaction', COUNT(*) FROM "Transaction"
+UNION ALL SELECT 'Category', COUNT(*) FROM "Category";
+```
+
+Type `\q` to exit psql.
+
 #### Verify EBS data volume is mounted
 
 ```bash

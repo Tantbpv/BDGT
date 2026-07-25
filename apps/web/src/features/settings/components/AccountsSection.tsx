@@ -109,7 +109,7 @@ export function AccountsSection() {
         )}
 
         <form onSubmit={handleCreate} className="flex items-end gap-2">
-          <div className="flex flex-1 flex-col gap-1.5">
+          <div className="flex flex-1 flex-col gap-3">
             <Label htmlFor="new-account">{STRINGS.newAccountLabel}</Label>
             <Input
               id="new-account"

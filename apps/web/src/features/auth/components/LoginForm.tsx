@@ -51,7 +51,7 @@ export function LoginForm() {
       </CardHeader>
       <CardContent>
         <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-3">
             <Label htmlFor="email">{STRINGS.emailLabel}</Label>
             <Input
               id="email"
@@ -63,7 +63,7 @@ export function LoginForm() {
             {errors.email && <p className="text-destructive text-sm">{errors.email.message}</p>}
           </div>
 
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-3">
             <Label htmlFor="password">{STRINGS.passwordLabel}</Label>
             <Input
               id="password"

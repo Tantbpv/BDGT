@@ -30,14 +30,14 @@ const STRINGS = {
   descriptionLabel: 'Description',
   descriptionPlaceholder: 'What was this for?',
   typeLabel: 'Type',
-  categoryLabel: 'Category',
   moreOptions: 'More options',
   submitIdle: 'Add',
   submitPending: 'Adding…',
 } as const;
 
 function typeButtonClass(type: 'EXPENSE' | 'INCOME', selected: boolean): string {
-  const base = 'cursor-pointer select-none rounded-full px-4 py-1.5 text-sm font-medium transition-colors';
+  const base =
+    'cursor-pointer select-none rounded-full px-4 py-1.5 text-sm font-medium transition-colors';
   if (!selected) return `${base} border border-border text-muted-foreground hover:text-foreground`;
   if (type === 'EXPENSE') return `${base} bg-destructive text-destructive-foreground`;
   return `${base} bg-green-600 text-white`;
@@ -112,7 +112,7 @@ export function AddTransactionForm({ categories }: Props) {
       </CardHeader>
       <CardContent>
         <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-3">
             <Label htmlFor="amount">{STRINGS.amountLabel}</Label>
             <Input
               id="amount"
@@ -122,14 +122,11 @@ export function AddTransactionForm({ categories }: Props) {
               placeholder="0.00"
               {...register('amount')}
             />
-            {errors.amount && (
-              <p className="text-destructive text-sm">{errors.amount.message}</p>
-            )}
+            {errors.amount && <p className="text-destructive text-sm">{errors.amount.message}</p>}
           </div>
 
           {categories.length > 0 && (
-            <div className="flex flex-col gap-1.5">
-              <Label>{STRINGS.categoryLabel}</Label>
+            <div className="flex flex-col gap-3">
               <div className="flex flex-wrap gap-2">
                 {categories.map((c) => (
                   <button
@@ -150,7 +147,7 @@ export function AddTransactionForm({ categories }: Props) {
           )}
 
           <Accordion label={STRINGS.moreOptions}>
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-3">
               <Label htmlFor="description">{STRINGS.descriptionLabel}</Label>
               <Input
                 id="description"
@@ -163,9 +160,8 @@ export function AddTransactionForm({ categories }: Props) {
               )}
             </div>
 
-            <div className="flex flex-col gap-1.5">
-              <Label>{STRINGS.typeLabel}</Label>
-              <div className="flex gap-2">
+            <div className="flex flex-col gap-3 py-2">
+              <div className="flex gap-4">
                 {(['EXPENSE', 'INCOME'] as const).map((t) => (
                   <label key={t} className={typeButtonClass(t, selectedType === t)}>
                     <input type="radio" className="sr-only" value={t} {...register('type')} />

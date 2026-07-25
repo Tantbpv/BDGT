@@ -65,7 +65,7 @@ export function ChangePasswordSection() {
       </CardHeader>
       <CardContent>
         <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-3">
             <Label htmlFor="currentPassword">{STRINGS.currentPasswordLabel}</Label>
             <Input
               id="currentPassword"
@@ -78,7 +78,7 @@ export function ChangePasswordSection() {
             )}
           </div>
 
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-3">
             <Label htmlFor="newPassword">{STRINGS.newPasswordLabel}</Label>
             <Input
               id="newPassword"
@@ -91,7 +91,7 @@ export function ChangePasswordSection() {
             )}
           </div>
 
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-3">
             <Label htmlFor="confirmNewPassword">{STRINGS.confirmPasswordLabel}</Label>
             <Input
               id="confirmNewPassword"

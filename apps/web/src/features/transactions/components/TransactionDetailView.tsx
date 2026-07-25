@@ -72,15 +72,22 @@ export function TransactionDetailView({ id }: Props) {
 
   return (
     <div className="flex w-full max-w-lg flex-col gap-6">
-      <div className="flex items-center gap-3">
-        <Link href="/transactions" className="text-muted-foreground text-sm hover:text-foreground transition-colors">
+      <div className="flex items-center gap-4">
+        <Link
+          href="/transactions"
+          className="text-muted-foreground text-sm hover:text-foreground transition-colors"
+        >
           {STRINGS.back}
         </Link>
         <h1 className="text-2xl font-semibold">{STRINGS.title}</h1>
       </div>
 
       {isPending && <p className="text-muted-foreground text-sm">{STRINGS.loadingText}</p>}
-      {isError && <p className="text-destructive text-sm" role="alert">{error.message}</p>}
+      {isError && (
+        <p className="text-destructive text-sm" role="alert">
+          {error.message}
+        </p>
+      )}
 
       {transaction && (
         <Card>
@@ -94,7 +101,9 @@ export function TransactionDetailView({ id }: Props) {
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">{STRINGS.labelAmount}</span>
-              <span className={`font-medium ${transaction.type === 'INCOME' ? 'text-green-500' : 'text-destructive'}`}>
+              <span
+                className={`font-medium ${transaction.type === 'INCOME' ? 'text-green-500' : 'text-destructive'}`}
+              >
                 {transaction.type === 'INCOME' ? '+' : '−'}
                 {formatCurrency(transaction.amount)}
               </span>
@@ -131,7 +140,9 @@ export function TransactionDetailView({ id }: Props) {
                 )}
               </div>
               {deleteError && (
-                <p className="text-destructive text-sm" role="alert">{deleteError}</p>
+                <p className="text-destructive text-sm" role="alert">
+                  {deleteError}
+                </p>
               )}
             </div>
           </CardFooter>

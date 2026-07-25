@@ -75,7 +75,7 @@ export function CategoriesSection() {
         )}
 
         <form onSubmit={handleCreate} className="flex items-end gap-2">
-          <div className="flex flex-1 flex-col gap-1.5">
+          <div className="flex flex-1 flex-col gap-3">
             <Label htmlFor="new-category">{STRINGS.newCategoryLabel}</Label>
             <Input
               id="new-category"

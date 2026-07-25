@@ -54,7 +54,7 @@ export function RegisterForm() {
       </CardHeader>
       <CardContent>
         <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-3">
             <Label htmlFor="name">
               {STRINGS.nameLabel}{' '}
               <span className="text-muted-foreground">{STRINGS.nameOptional}</span>
@@ -69,7 +69,7 @@ export function RegisterForm() {
             {errors.name && <p className="text-destructive text-sm">{errors.name.message}</p>}
           </div>
 
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-3">
             <Label htmlFor="email">{STRINGS.emailLabel}</Label>
             <Input
               id="email"
@@ -81,7 +81,7 @@ export function RegisterForm() {
             {errors.email && <p className="text-destructive text-sm">{errors.email.message}</p>}
           </div>
 
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-3">
             <Label htmlFor="password">{STRINGS.passwordLabel}</Label>
             <Input
               id="password"

@@ -95,7 +95,7 @@ export function TransactionsList({
                   >
                     <Link
                       href={`/transactions/${t.id}`}
-                      className="flex items-center justify-between py-3 transition-opacity hover:opacity-80"
+                      className="flex items-center justify-between py-2 transition-opacity hover:opacity-80"
                     >
                       <div className="flex flex-col gap-0.5">
                         <span className="text-sm font-medium">{t.description}</span>

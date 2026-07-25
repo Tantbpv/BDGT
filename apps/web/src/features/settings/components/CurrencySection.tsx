@@ -43,12 +43,12 @@ export function CurrencySection() {
   else if (saved) buttonLabel = STRINGS.saveDone;
 
   return (
-    <Card>
+    <Card className="hidden">
       <CardHeader>
         <CardTitle>{STRINGS.title}</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
-        <div className="flex flex-col gap-1.5">
+        <div className="flex flex-col gap-3">
           <Label htmlFor="currency">{STRINGS.currencyLabel}</Label>
           <select
             id="currency"
@@ -70,7 +70,13 @@ export function CurrencySection() {
           </p>
         )}
 
-        <Button onClick={() => { void handleSave(); }} disabled={updateSettings.isPending} className="self-start">
+        <Button
+          onClick={() => {
+            void handleSave();
+          }}
+          disabled={updateSettings.isPending}
+          className="self-start"
+        >
           {buttonLabel}
         </Button>
       </CardContent>
