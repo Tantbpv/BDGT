@@ -50,7 +50,7 @@ export function LoginForm() {
         <CardTitle className="text-xl">{STRINGS.title}</CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
+        <form onSubmit={onSubmit} method="post" className="flex flex-col gap-4" noValidate>
           <div className="flex flex-col gap-3">
             <Label htmlFor="email">{STRINGS.emailLabel}</Label>
             <Input

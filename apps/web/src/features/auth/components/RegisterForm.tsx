@@ -1,9 +1,10 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { type RegisterRequest, RegisterRequestSchema } from '@repo/contracts/auth';
+import { RegisterRequestSchema } from '@repo/contracts/auth';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,6 +12,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useRegister } from '@/features/auth/hooks/useAuth';
 import { ApiClientError } from '@/shared/lib/api-client';
+
+const RegisterFormSchema = RegisterRequestSchema.extend({
+  confirmPassword: z.string().min(1, 'Please confirm your password'),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ['confirmPassword'],
+});
+
+type RegisterFormData = z.infer<typeof RegisterFormSchema>;
 
 const STRINGS = {
   title: 'Create your account',
@@ -20,6 +30,7 @@ const STRINGS = {
   emailLabel: 'Email',
   emailPlaceholder: 'you@example.com',
   passwordLabel: 'Password',
+  confirmPasswordLabel: 'Repeat password',
   submitIdle: 'Create account',
   submitPending: 'Creating account…',
   errorFallback: 'Something went wrong. Please try again.',
@@ -34,11 +45,13 @@ export function RegisterForm() {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<RegisterRequest>({
-    resolver: zodResolver(RegisterRequestSchema),
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(RegisterFormSchema),
   });
 
-  const onSubmit = handleSubmit((data) => { registerMutation.mutate(data); });
+  const onSubmit = handleSubmit(({ confirmPassword: _, ...data }) => {
+    registerMutation.mutate(data);
+  });
 
   let serverError: string | null = null;
   if (registerMutation.error instanceof ApiClientError) {
@@ -53,7 +66,7 @@ export function RegisterForm() {
         <CardTitle className="text-xl">{STRINGS.title}</CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
+        <form onSubmit={onSubmit} method="post" className="flex flex-col gap-4" noValidate>
           <div className="flex flex-col gap-3">
             <Label htmlFor="name">
               {STRINGS.nameLabel}{' '}
@@ -91,6 +104,19 @@ export function RegisterForm() {
             />
             {errors.password && (
               <p className="text-destructive text-sm">{errors.password.message}</p>
+            )}
+          </div>
+
+          <div className="flex flex-col gap-3">
+            <Label htmlFor="confirmPassword">{STRINGS.confirmPasswordLabel}</Label>
+            <Input
+              id="confirmPassword"
+              type="password"
+              autoComplete="new-password"
+              {...register('confirmPassword')}
+            />
+            {errors.confirmPassword && (
+              <p className="text-destructive text-sm">{errors.confirmPassword.message}</p>
             )}
           </div>
 
