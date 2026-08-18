@@ -2,12 +2,30 @@
   "name": "@repo/utils",
   "version": "0.0.1",
   "private": true,
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
   "exports": {
-    ".": "./src/index.ts",
-    "./date": "./src/date.ts",
-    "./money": "./src/money.ts"
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./date": {
+      "types": "./src/date.ts",
+      "import": "./dist/date.js",
+      "require": "./dist/date.cjs"
+    },
+    "./money": {
+      "types": "./src/money.ts",
+      "import": "./dist/money.js",
+      "require": "./dist/money.cjs"
+    }
   },
+  "files": ["dist", "src"],
   "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
     "type-check": "tsc --noEmit",
     "lint": "eslint ."
   },
@@ -15,6 +33,7 @@
     "@repo/eslint-config": "workspace:*",
     "@repo/tsconfig": "workspace:*",
     "eslint": "^9.20.0",
+    "tsup": "^8.4.0",
     "typescript": "^5.8.3"
   }
 }

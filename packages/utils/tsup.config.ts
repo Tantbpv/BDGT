@@ -1,0 +1,15 @@
+import { defineConfig } from 'tsup';
+
+export default defineConfig({
+  entry: {
+    index: 'src/index.ts',
+    date: 'src/date.ts',
+    money: 'src/money.ts',
+  },
+  format: ['cjs', 'esm'],
+  dts: true,
+  sourcemap: true,
+  clean: true,
+  splitting: false,
+  treeshake: true,
+});

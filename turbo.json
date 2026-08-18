@@ -8,14 +8,21 @@
     "JWT_REFRESH_SECRET",
     "JWT_ACCESS_EXPIRES_IN",
     "JWT_REFRESH_EXPIRES_IN",
-    "LOG_LEVEL"
+    "LOG_LEVEL",
+    "AI_SERVICE_KEY"
   ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
       "outputs": [".next/**", "!.next/cache/**", "dist/**"]
     },
+    "start": {
+      "dependsOn": ["^build"],
+      "cache": false,
+      "persistent": true
+    },
     "dev": {
+      "dependsOn": ["^build"],
       "cache": false,
       "persistent": true
     },

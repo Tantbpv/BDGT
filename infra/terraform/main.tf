@@ -25,7 +25,7 @@ provider "aws" {
     tags = {
       Project     = "bdgt"
       Environment = var.environment
-      ManagedBy   = "terraform"
+      ManagedBy   = "terraform_v1"
     }
   }
 }
