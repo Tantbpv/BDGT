@@ -2,16 +2,47 @@
   "name": "@repo/contracts",
   "version": "0.0.1",
   "private": true,
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
   "exports": {
-    ".": "./src/index.ts",
-    "./accounts": "./src/accounts/index.ts",
-    "./common": "./src/common/index.ts",
-    "./auth": "./src/auth/index.ts",
-    "./transactions": "./src/transactions/index.ts",
-    "./categories": "./src/categories/index.ts",
-    "./users": "./src/users/index.ts"
+    ".": {
+      "import": { "types": "./src/index.ts", "default": "./dist/index.js" },
+      "require": { "types": "./dist/index.d.cts", "default": "./dist/index.cjs" }
+    },
+    "./accounts": {
+      "import": { "types": "./src/accounts/index.ts", "default": "./dist/accounts.js" },
+      "require": { "types": "./dist/accounts.d.cts", "default": "./dist/accounts.cjs" }
+    },
+    "./ai": {
+      "import": { "types": "./src/ai/index.ts", "default": "./dist/ai.js" },
+      "require": { "types": "./dist/ai.d.cts", "default": "./dist/ai.cjs" }
+    },
+    "./auth": {
+      "import": { "types": "./src/auth/index.ts", "default": "./dist/auth.js" },
+      "require": { "types": "./dist/auth.d.cts", "default": "./dist/auth.cjs" }
+    },
+    "./categories": {
+      "import": { "types": "./src/categories/index.ts", "default": "./dist/categories.js" },
+      "require": { "types": "./dist/categories.d.cts", "default": "./dist/categories.cjs" }
+    },
+    "./common": {
+      "import": { "types": "./src/common/index.ts", "default": "./dist/common.js" },
+      "require": { "types": "./dist/common.d.cts", "default": "./dist/common.cjs" }
+    },
+    "./transactions": {
+      "import": { "types": "./src/transactions/index.ts", "default": "./dist/transactions.js" },
+      "require": { "types": "./dist/transactions.d.cts", "default": "./dist/transactions.cjs" }
+    },
+    "./users": {
+      "import": { "types": "./src/users/index.ts", "default": "./dist/users.js" },
+      "require": { "types": "./dist/users.d.cts", "default": "./dist/users.cjs" }
+    }
   },
+  "files": ["dist", "src"],
   "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
     "type-check": "tsc --noEmit",
     "lint": "eslint ."
   },
@@ -22,6 +53,7 @@
     "@repo/eslint-config": "workspace:*",
     "@repo/tsconfig": "workspace:*",
     "eslint": "^9.20.0",
+    "tsup": "^8.4.0",
     "typescript": "^5.8.3"
   }
 }

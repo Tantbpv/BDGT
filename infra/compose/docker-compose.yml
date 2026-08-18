@@ -27,5 +27,15 @@ services:
     depends_on:
       - postgres
 
+  ollama:
+    image: ollama/ollama:latest
+    container_name: bdgt_ollama
+    ports:
+      - "666:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    restart: unless-stopped
+
 volumes:
   postgres_data:
+  ollama_data:
