@@ -1,5 +1,7 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import type { AnalyzeTransactionsResponse } from '@repo/contracts/ai';
+
 import type { CreateTransaction, Transaction } from '@/features/transactions/types';
 import { apiClient } from '@/shared/lib/api-client';
 import { queryKeys } from '@/shared/lib/query-keys';
@@ -42,5 +44,12 @@ export function useDeleteTransaction() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.transactions() });
     },
+  });
+}
+
+export function useAnalyzeTransactions() {
+  return useMutation({
+    mutationFn: (filters?: { from?: string; to?: string }) =>
+      apiClient.post<AnalyzeTransactionsResponse>('/api/v1/ai/analyze', filters ?? {}),
   });
 }
