@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { useSettings } from '@/features/settings/hooks/useSettings';
 
 import { useDashboardStats } from '../hooks/useDashboardStats';
+import { AiAnalysis } from './AiAnalysis';
 import { DateRangeFilter } from './DateRangeFilter';
 import { FinancialSummary } from './FinancialSummary';
 import { Insights } from './Insights';
@@ -21,7 +22,6 @@ export function DashboardView() {
   const { data: stats, isPending, isError, error } = useDashboardStats(dateRange);
   const { data: settings } = useSettings();
   const currency = settings?.currency;
-
   return (
     <div className="flex w-full max-w-3xl flex-col gap-6">
       <h1 className="text-2xl font-semibold">Dashboard</h1>
@@ -33,6 +33,7 @@ export function DashboardView() {
       )}
       <FinancialSummary stats={stats} isLoading={isPending} currency={currency} />
       <Insights />
+      <AiAnalysis dateRange={dateRange} />
     </div>
   );
 }
