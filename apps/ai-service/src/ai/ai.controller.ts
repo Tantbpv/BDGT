@@ -1,10 +1,11 @@
-import { BadRequestException, Body, Controller, Post, UseGuards, UseInterceptors } from '@nestjs/common';
-import type { AnalyzeTransactionsResponse } from '@repo/contracts/ai';
+import { Body, Controller, Post, UseGuards, UseInterceptors } from '@nestjs/common';
+import type { AnalyzeTransactionsRequest, AnalyzeTransactionsResponse } from '@repo/contracts/ai';
 import { AnalyzeTransactionsRequestSchema } from '@repo/contracts/ai';
 import type { ApiResponse } from '@repo/contracts/common';
 
 import { ApiKeyGuard } from '../guards/api-key.guard';
 import { LoggingInterceptor } from '../interceptors/logging.interceptor';
+import { ZodValidationPipe } from '../pipes/zod-validation.pipe';
 import { AiService } from './ai.service';
 
 @Controller('ai')
@@ -14,11 +15,9 @@ export class AiController {
   constructor(private readonly aiService: AiService) {}
 
   @Post('analyze')
-  async analyze(@Body() body: unknown): Promise<ApiResponse<AnalyzeTransactionsResponse>> {
-    const result = AnalyzeTransactionsRequestSchema.safeParse(body);
-    if (!result.success) {
-      throw new BadRequestException(result.error.flatten());
-    }
-    return { data: await this.aiService.analyzeTransactions(result.data) };
+  async analyze(
+    @Body(new ZodValidationPipe(AnalyzeTransactionsRequestSchema)) body: AnalyzeTransactionsRequest,
+  ): Promise<ApiResponse<AnalyzeTransactionsResponse>> {
+    return { data: await this.aiService.analyzeTransactions(body) };
   }
 }

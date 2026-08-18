@@ -2,6 +2,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
+import type { EnvConfig } from '../../config/env.schema';
 import { LlmProvider } from '../llm.provider';
 import type {
   LlmCompletionRequest,
@@ -16,10 +17,10 @@ export class AnthropicProvider extends LlmProvider {
   private readonly client: Anthropic;
   private readonly defaultModel: string;
 
-  constructor(config: ConfigService) {
+  constructor(config: ConfigService<EnvConfig, true>) {
     super();
-    this.client = new Anthropic({ apiKey: config.get<string>('ANTHROPIC_API_KEY') });
-    this.defaultModel = config.get<string>('LLM_MODEL') ?? 'claude-sonnet-4-6';
+    this.client = new Anthropic({ apiKey: config.get('ANTHROPIC_API_KEY') });
+    this.defaultModel = config.get('LLM_MODEL') ?? 'claude-sonnet-4-6';
   }
 
   protected async doComplete(req: LlmCompletionRequest): Promise<LlmCompletionResponse> {

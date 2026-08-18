@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Message, Tool } from 'ollama';
+
+import type { EnvConfig } from '../../config/env.schema';
 import { Ollama } from 'ollama';
 
 import { LlmProvider } from '../llm.provider';
@@ -17,10 +19,10 @@ export class OllamaProvider extends LlmProvider {
   private readonly client: Ollama;
   private readonly defaultModel: string;
 
-  constructor(private readonly config: ConfigService) {
+  constructor(private readonly config: ConfigService<EnvConfig, true>) {
     super();
-    this.client = new Ollama({ host: config.get<string>('OLLAMA_HOST')});
-    this.defaultModel = config.get<string>('LLM_MODEL') ?? 'llama3.2';
+    this.client = new Ollama({ host: config.get('OLLAMA_HOST') });
+    this.defaultModel = config.get('LLM_MODEL') ?? 'llama3.2';
   }
 
   protected async doComplete(req: LlmCompletionRequest): Promise<LlmCompletionResponse> {
