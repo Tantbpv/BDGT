@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeftRight, LayoutDashboard, Settings } from 'lucide-react';
+import { ArrowLeftRight, LayoutDashboard, MessageSquare, Settings } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -37,6 +37,9 @@ export function AppHeader() {
               </Link>
               <Link href="/dashboard" aria-label="Dashboard" className={navClass('/dashboard')}>
                 <LayoutDashboard size={18} strokeWidth={strokeWidth('/dashboard')} />
+              </Link>
+              <Link href="/chat" aria-label="Chat" className={navClass('/chat')}>
+                <MessageSquare size={18} strokeWidth={strokeWidth('/chat')} />
               </Link>
               <Link href="/settings" aria-label="Settings" className={navClass('/settings')}>
                 <Settings size={18} strokeWidth={strokeWidth('/settings')} />

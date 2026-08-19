@@ -1,7 +1,12 @@
-import { AnalyzeTransactionsRequest, AnalyzeTransactionsResponse } from '@repo/contracts/ai';
-import { ApiError, ApiResponse } from '@repo/contracts/common';
+import {
+  AnalyzeTransactionsRequest,
+  AnalyzeTransactionsResponse,
+  ChatRequest,
+  ChatResponse,
+} from '@repo/contracts/ai';
+import { type ApiError, type ApiResponse } from '@repo/contracts/common';
 import { AIClientError } from './errors';
-import { AIClientConfig } from './types';
+import { type AIClientConfig } from './types';
 
 export class AIClient {
   private readonly baseUrl: string;
@@ -24,6 +29,14 @@ export class AIClient {
   ): Promise<AnalyzeTransactionsResponse> {
     const response = await this.request<ApiResponse<AnalyzeTransactionsResponse>>(
       '/api/ai/analyze',
+      { method: 'POST', body: JSON.stringify(request) },
+    );
+    return response.data;
+  }
+
+  async chat(request: ChatRequest): Promise<ChatResponse> {
+    const response = await this.request<ApiResponse<ChatResponse>>(
+      '/api/ai/chat',
       { method: 'POST', body: JSON.stringify(request) },
     );
     return response.data;

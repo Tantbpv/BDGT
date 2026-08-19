@@ -5,6 +5,7 @@ import type { Transaction } from '@repo/contracts/transactions';
 import { prisma } from '@repo/database';
 import { type NextRequest, NextResponse } from 'next/server';
 
+import { aiServiceClient } from '@/shared/lib/ai-service-client';
 import { getAuthUser } from '@/shared/lib/auth-helpers';
 
 function toTransaction(t: {
@@ -75,23 +76,15 @@ export async function POST(
     );
   }
 
-  const aiServiceUrl = process.env['AI_SERVICE_URL'] ?? 'http://localhost:3001';
-  const aiServiceKey = process.env['AI_SERVICE_KEY'] ?? '';
-
-  const aiResponse = await fetch(`${aiServiceUrl}/api/ai/analyze`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-api-key': aiServiceKey },
-    body: JSON.stringify({ transactions: rows.map(toTransaction) }),
-  });
-
-  if (!aiResponse.ok) {
-    const body = await aiResponse.json().catch(() => ({})) as ApiError;
+  try {
+    const result = await aiServiceClient.analyzeTransactions({
+      transactions: rows.map(toTransaction),
+    });
+    return NextResponse.json({ data: result });
+  } catch {
     return NextResponse.json(
-      { error: { code: 'AI_SERVICE_ERROR', message: body?.error?.message ?? 'AI service error' } },
+      { error: { code: 'AI_SERVICE_ERROR', message: 'AI service error' } },
       { status: 502 },
     );
   }
-
-  const result = (await aiResponse.json()) as ApiResponse<AnalyzeTransactionsResponse>;
-  return NextResponse.json({ data: result.data });
 }
