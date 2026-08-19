@@ -23,6 +23,7 @@ const USERS_ME_PATH = '/api/v1/users/me';
 class ApiClient {
   private readonly baseHeaders = { 'Content-Type': 'application/json' };
   private readonly baseInit: RequestInit = { credentials: 'include' };
+  private refreshPromise: Promise<boolean> | null = null;
 
   private async handleResponse<T>(response: Response): Promise<T> {
     const data = (await response.json()) as { data?: T } & ApiError;
@@ -36,13 +37,16 @@ class ApiClient {
     return data.data as T;
   }
 
-  private async refreshTokens(): Promise<boolean> {
-    try {
-      const r = await fetch(REFRESH_PATH, { method: 'POST', credentials: 'include' });
-      return r.ok;
-    } catch {
-      return false;
+  private refreshTokens(): Promise<boolean> {
+    if (!this.refreshPromise) {
+      this.refreshPromise = fetch(REFRESH_PATH, { method: 'POST', credentials: 'include' })
+        .then((r) => r.ok)
+        .catch(() => false)
+        .finally(() => {
+          this.refreshPromise = null;
+        });
     }
+    return this.refreshPromise;
   }
 
   private async fetchWithRetry(path: string, init: RequestInit): Promise<Response> {

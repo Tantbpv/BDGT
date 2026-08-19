@@ -1,6 +1,11 @@
 import { Body, Controller, Post, UseGuards, UseInterceptors } from '@nestjs/common';
-import type { AnalyzeTransactionsRequest, AnalyzeTransactionsResponse } from '@repo/contracts/ai';
-import { AnalyzeTransactionsRequestSchema } from '@repo/contracts/ai';
+import type {
+  AnalyzeTransactionsRequest,
+  AnalyzeTransactionsResponse,
+  ChatRequest,
+  ChatResponse,
+} from '@repo/contracts/ai';
+import { AnalyzeTransactionsRequestSchema, ChatRequestSchema } from '@repo/contracts/ai';
 import type { ApiResponse } from '@repo/contracts/common';
 
 import { ApiKeyGuard } from '../guards/api-key.guard';
@@ -19,5 +24,12 @@ export class AiController {
     @Body(new ZodValidationPipe(AnalyzeTransactionsRequestSchema)) body: AnalyzeTransactionsRequest,
   ): Promise<ApiResponse<AnalyzeTransactionsResponse>> {
     return { data: await this.aiService.analyzeTransactions(body) };
+  }
+
+  @Post('chat')
+  async chat(
+    @Body(new ZodValidationPipe(ChatRequestSchema)) body: ChatRequest,
+  ): Promise<ApiResponse<ChatResponse>> {
+    return { data: await this.aiService.chat(body) };
   }
 }
