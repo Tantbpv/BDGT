@@ -1,8 +1,9 @@
 export interface LlmMessage {
   role: 'system' | 'user' | 'assistant' | 'tool';
-  content: string;
+  content: string | null;
   tool_call_id?: string;
   name?: string;
+  tool_calls?: LlmToolCall[];
 }
 
 export interface LlmToolFunction {

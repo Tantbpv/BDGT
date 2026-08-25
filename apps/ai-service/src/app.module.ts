@@ -1,9 +1,9 @@
-import { ConfigModule } from '@nestjs/config';
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { LoggerModule } from 'nestjs-pino';
 
+import { ChatModule } from './chat/chat.module';
 import { envSchema } from './config/env.schema';
-import { AiModule } from './ai/ai.module';
 import { DatabaseModule } from './database/database.module';
 import { HealthModule } from './health/health.module';
 
@@ -26,10 +26,14 @@ import { HealthModule } from './health/health.module';
           process.env['NODE_ENV'] !== 'production'
             ? { target: 'pino-pretty', options: { colorize: true } }
             : undefined,
+        serializers: {
+          req: () => undefined,
+          res: () => undefined,
+        },
       },
     }),
     DatabaseModule,
-    AiModule,
+    ChatModule,
     HealthModule,
   ],
 })

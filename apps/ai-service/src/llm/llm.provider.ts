@@ -13,7 +13,8 @@ export abstract class LlmProvider {
         model: req.model,
         messageCount: req.messages.length,
         tools: req.tools?.map((t) => t.function.name),
-        messages: req.messages,
+        messages: req.messages.filter((m) => m.role !== 'system'),
+        tool_choice: req.tool_choice,
       },
       'LLM request',
     );
@@ -25,7 +26,7 @@ export abstract class LlmProvider {
     this.logger.log(
       {
         finish_reason: response.finish_reason,
-        usage: response.usage,
+        // usage: response.usage,
         toolCalls: response.tool_calls?.map((c) => c.function.name),
         content: response.content,
         duration,

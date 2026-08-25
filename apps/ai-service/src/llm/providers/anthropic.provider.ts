@@ -52,17 +52,31 @@ export class AnthropicProvider extends LlmProvider {
             {
               type: 'tool_result',
               tool_use_id: m.tool_call_id ?? '',
-              content: m.content,
+              content: m.content ?? '',
             },
           ],
         };
       }
 
       if (m.role === 'assistant') {
-        return { role: 'assistant', content: m.content };
+        if (m.tool_calls?.length) {
+          return {
+            role: 'assistant',
+            content: [
+              ...(m.content ? [{ type: 'text' as const, text: m.content }] : []),
+              ...m.tool_calls.map((tc) => ({
+                type: 'tool_use' as const,
+                id: tc.id,
+                name: tc.function.name,
+                input: JSON.parse(tc.function.arguments) as Record<string, unknown>,
+              })),
+            ],
+          };
+        }
+        return { role: 'assistant', content: m.content ?? '' };
       }
 
-      return { role: 'user', content: m.content };
+      return { role: 'user', content: m.content ?? '' };
     });
   }
 

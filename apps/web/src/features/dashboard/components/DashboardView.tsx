@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { useSettings } from '@/features/settings/hooks/useSettings';
 
 import { useDashboardStats } from '../hooks/useDashboardStats';
-import { AiAnalysis } from './AiAnalysis';
+import { AnalyzeWithAi } from './AnalyzeWithAi';
 import { DateRangeFilter } from './DateRangeFilter';
 import { FinancialSummary } from './FinancialSummary';
 import { Insights } from './Insights';
@@ -33,7 +33,7 @@ export function DashboardView() {
       )}
       <FinancialSummary stats={stats} isLoading={isPending} currency={currency} />
       <Insights />
-      <AiAnalysis dateRange={dateRange} />
+      <AnalyzeWithAi dateRange={dateRange} />
     </div>
   );
 }

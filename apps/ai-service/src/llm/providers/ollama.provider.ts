@@ -1,10 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Message, Tool } from 'ollama';
-
-import type { EnvConfig } from '../../config/env.schema';
 import { Ollama } from 'ollama';
 
+import type { EnvConfig } from '../../config/env.schema';
 import { LlmProvider } from '../llm.provider';
 import type {
   LlmCompletionRequest,
@@ -40,10 +39,21 @@ export class OllamaProvider extends LlmProvider {
   }
 
   private toOllamaMessages(messages: LlmMessage[]): Message[] {
-    return messages.map((m): Message => ({
-      role: m.role,
-      content: m.content,
-    }));
+    return messages.map((m): Message => {
+      if (m.role === 'assistant' && m.tool_calls?.length) {
+        return {
+          role: m.role,
+          content: m.content ?? '',
+          tool_calls: m.tool_calls.map((tc) => ({
+            function: {
+              name: tc.function.name,
+              arguments: JSON.parse(tc.function.arguments) as Record<string, unknown>,
+            },
+          })),
+        };
+      }
+      return { role: m.role, content: m.content ?? '' };
+    });
   }
 
   private toOllamaTools(tools: LlmTool[]): Tool[] {
