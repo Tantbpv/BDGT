@@ -4,6 +4,7 @@ import { LoggerModule } from 'nestjs-pino';
 
 import { envSchema } from './config/env.schema';
 import { AiModule } from './ai/ai.module';
+import { DatabaseModule } from './database/database.module';
 import { HealthModule } from './health/health.module';
 
 @Module({
@@ -27,6 +28,7 @@ import { HealthModule } from './health/health.module';
             : undefined,
       },
     }),
+    DatabaseModule,
     AiModule,
     HealthModule,
   ],

@@ -20,6 +20,8 @@ model User {
   refreshTokens       RefreshToken[]
   passwordResetTokens PasswordResetToken[]
   transactions        Transaction[]
+  conversations       Conversation[]
+  memories            UserMemory[]
 }
 
 model UserSetting {
@@ -121,4 +123,96 @@ model Category {
 
   @@unique([name, accountId])
   @@index([accountId])
+}
+
+// ─── AI / Memory ───────────────────────────────────────────────────────────────
+
+enum MessageRole {
+  SYSTEM
+  USER
+  ASSISTANT
+  TOOL
+}
+
+enum MemoryType {
+  FACT
+  PREFERENCE
+  GOAL
+  PROJECT_CONTEXT
+  INSTRUCTION
+}
+
+enum MemoryStatus {
+  ACTIVE
+  SUPERSEDED
+  EXPIRED
+  DELETED
+}
+
+model Conversation {
+  id        String       @id @default(cuid())
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title     String?
+  summary   String?
+
+  messages  Message[]
+  memories  UserMemory[]
+
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt @default(now())
+
+  @@index([userId, updatedAt])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  role           MessageRole
+  content        String
+
+  tokenCount     Int?
+  metadata       Json?
+
+  createdAt      DateTime     @default(now())
+
+  @@index([conversationId, createdAt])
+}
+
+model UserMemory {
+  id             String        @id @default(cuid())
+
+  userId         String
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  conversationId String?
+  conversation   Conversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+
+  type           MemoryType
+  content        String
+
+  importance     Float         @default(0.5)
+  confidence     Float         @default(1.0)
+
+  status         MemoryStatus  @default(ACTIVE)
+
+  sourceMessageId String?
+
+  supersededById  String?
+  supersededBy    UserMemory?  @relation("SupersededBy", fields: [supersededById], references: [id])
+  supersedes      UserMemory[] @relation("SupersededBy")
+
+  lastConfirmedAt DateTime?
+  expiresAt       DateTime?
+
+  metadata        Json?
+
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt @default(now())
+
+  @@index([userId, status])
+  @@index([conversationId, status])
 }

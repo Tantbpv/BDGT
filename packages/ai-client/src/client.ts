@@ -1,8 +1,8 @@
 import {
-  AnalyzeTransactionsRequest,
-  AnalyzeTransactionsResponse,
-  ChatRequest,
-  ChatResponse,
+  type AnalyzeTransactionsRequest,
+  type AnalyzeTransactionsResponse,
+  type ChatRequest,
+  type ChatResponse,
 } from '@repo/contracts/ai';
 import { type ApiError, type ApiResponse } from '@repo/contracts/common';
 import { AIClientError } from './errors';

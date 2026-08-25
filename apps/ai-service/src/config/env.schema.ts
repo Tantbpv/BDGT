@@ -4,6 +4,7 @@ const baseSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().positive().default(3001),
   LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal']).default('info'),
+  DATABASE_URL: z.string().url(),
   AI_SERVICE_KEY: z.string().min(1),
   LLM_PROVIDER: z.enum(['anthropic', 'ollama']).default('ollama'),
   ANTHROPIC_API_KEY: z.string().optional(),
