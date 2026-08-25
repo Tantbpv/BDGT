@@ -6,6 +6,8 @@ import simpleImportSort from 'eslint-plugin-simple-import-sort'
 import globals from 'globals'
 
 const config: Linter.Config[] = [
+  { ignores: ['dist/**', '.next/**'] },
+
   js.configs.recommended,
 
   {

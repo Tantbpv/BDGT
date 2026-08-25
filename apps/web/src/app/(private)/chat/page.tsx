@@ -1,49 +1,72 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
 import type { ChatMessage } from '@repo/contracts/ai';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 
 import { useSendMessage } from '@/features/chat/hooks/useChat';
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
+  const [conversationId, setConversationId] = useState<string | undefined>();
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const hasSentPrefillRef = useRef(false);
   const { mutate: sendMessage, isPending } = useSendMessage();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
     const el = textareaRef.current;
     if (!el) return;
-    const PADDING_Y_DIFF = 10
+    const PADDING_Y_DIFF = 10;
     el.style.height = 'auto';
     el.style.height = `${el.scrollHeight + PADDING_Y_DIFF}px`;
   }, [input]);
 
+  useEffect(() => {
+    const prefill = searchParams.get('message');
+    if (!prefill || hasSentPrefillRef.current) return;
+    hasSentPrefillRef.current = true;
+    submitMessage(prefill);
+    router.replace(pathname, { scroll: false });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function submitMessage(text: string) {
+    const trimmed = text.trim();
+    if (!trimmed || isPending) return;
+
+    setMessages((prev) => [...prev, { role: 'user', content: trimmed }]);
+    setInput('');
+
+    sendMessage(
+      { message: trimmed, conversationId },
+      {
+        onSuccess(data) {
+          console.log(data);
+          setConversationId(data.conversationId);
+          setMessages((prev) => [...prev, { role: 'assistant', content: data.message }]);
+          setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
+        },
+      },
+    );
+
+    setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
+  }
+
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSubmit();
+      submitMessage(input);
     }
   }
 
   function handleSubmit(e?: React.FormEvent) {
     e?.preventDefault();
-    const trimmed = input.trim();
-    if (!trimmed || isPending) return;
-
-    const next: ChatMessage[] = [...messages, { role: 'user', content: trimmed }];
-    setMessages(next);
-    setInput('');
-
-    sendMessage(next, {
-      onSuccess(data) {
-        setMessages((prev) => [...prev, { role: 'assistant', content: data.message }]);
-        setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
-      },
-    });
-
-    setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
+    submitMessage(input);
   }
 
   return (

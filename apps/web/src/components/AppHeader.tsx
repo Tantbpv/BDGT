@@ -4,8 +4,8 @@ import { ArrowLeftRight, LayoutDashboard, MessageSquare, Settings } from 'lucide
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-import { useCurrentUser } from '@/features/auth/hooks/useAuth';
 import { ActiveAccountName } from '@/components/ActiveAccountName';
+import { useCurrentUser } from '@/features/auth/hooks/useAuth';
 
 export function AppHeader() {
   const { data } = useCurrentUser();

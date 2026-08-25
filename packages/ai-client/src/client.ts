@@ -1,10 +1,6 @@
-import {
-  type AnalyzeTransactionsRequest,
-  type AnalyzeTransactionsResponse,
-  type ChatRequest,
-  type ChatResponse,
-} from '@repo/contracts/ai';
+import { type ChatRequest, type ChatResponse } from '@repo/contracts/ai';
 import { type ApiError, type ApiResponse } from '@repo/contracts/common';
+
 import { AIClientError } from './errors';
 import { type AIClientConfig } from './types';
 
@@ -24,19 +20,9 @@ export class AIClient {
     return this.request('/api/health', { method: 'GET' });
   }
 
-  async analyzeTransactions(
-    request: AnalyzeTransactionsRequest,
-  ): Promise<AnalyzeTransactionsResponse> {
-    const response = await this.request<ApiResponse<AnalyzeTransactionsResponse>>(
-      '/api/ai/analyze',
-      { method: 'POST', body: JSON.stringify(request) },
-    );
-    return response.data;
-  }
-
   async chat(request: ChatRequest): Promise<ChatResponse> {
     const response = await this.request<ApiResponse<ChatResponse>>(
-      '/api/ai/chat',
+      '/api/chat',
       { method: 'POST', body: JSON.stringify(request) },
     );
     return response.data;
@@ -47,7 +33,7 @@ export class AIClient {
       ...init,
       headers: { ...this.headers, ...(init.headers as Record<string, string> | undefined) },
     });
-
+    console.log('[AIClient request]', response);
     if (!response.ok) {
       const body = (await response.json().catch(() => null)) as ApiError | null;
       throw new AIClientError(
