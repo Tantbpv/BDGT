@@ -21,3 +21,9 @@ export const ChatResponseSchema = z.object({
 });
 
 export type ChatResponse = z.infer<typeof ChatResponseSchema>;
+
+export const ConversationHistoryResponseSchema = z.object({
+  messages: z.array(ChatMessageSchema),
+});
+
+export type ConversationHistoryResponse = z.infer<typeof ConversationHistoryResponseSchema>;

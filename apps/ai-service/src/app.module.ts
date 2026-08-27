@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { LoggerModule } from 'nestjs-pino';
 
 import { ChatModule } from './chat/chat.module';
+import { ConversationModule } from './conversation/conversation.module';
 import { envSchema } from './config/env.schema';
 import { DatabaseModule } from './database/database.module';
 import { HealthModule } from './health/health.module';
@@ -34,6 +35,7 @@ import { HealthModule } from './health/health.module';
     }),
     DatabaseModule,
     ChatModule,
+    ConversationModule,
     HealthModule,
   ],
 })

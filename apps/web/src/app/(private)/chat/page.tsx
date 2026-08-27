@@ -4,12 +4,16 @@ import type { ChatMessage } from '@repo/contracts/ai';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
-import { useSendMessage } from '@/features/chat/hooks/useChat';
+import {
+  CONVERSATION_ID_KEY,
+  useConversationHistory,
+  useSendMessage,
+} from '@/features/chat/hooks/useChat';
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
-  const [conversationId, setConversationId] = useState<string | undefined>();
+  const [conversationId, setConversationId] = useState<string | null | undefined>(undefined);
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const hasSentPrefillRef = useRef(false);
@@ -17,6 +21,40 @@ export default function ChatPage() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
+
+  const {
+    data: historyData,
+    error: historyError,
+    isSuccess: historyIsSuccess,
+  } = useConversationHistory(conversationId);
+
+  const historySettled = conversationId !== undefined && (conversationId === null || historyIsSuccess || !!historyError);
+
+  // On mount: restore conversationId from sessionStorage
+  useEffect(() => {
+    const stored = sessionStorage.getItem(CONVERSATION_ID_KEY);
+    setConversationId(stored ?? null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // React to history query result
+  useEffect(() => {
+    if (conversationId === null) return;
+
+    if (historyIsSuccess) {
+      if (historyData.messages.length > 0) {
+        setMessages(historyData.messages);
+      } else {
+        sessionStorage.removeItem(CONVERSATION_ID_KEY);
+        setConversationId(null);
+      }
+    }
+
+    if (historyError) {
+      sessionStorage.removeItem(CONVERSATION_ID_KEY);
+      setConversationId(null);
+    }
+  }, [historyIsSuccess, historyError, historyData, conversationId]);
 
   useEffect(() => {
     const el = textareaRef.current;
@@ -27,13 +65,14 @@ export default function ChatPage() {
   }, [input]);
 
   useEffect(() => {
+    if (!historySettled) return;
     const prefill = searchParams.get('message');
     if (!prefill || hasSentPrefillRef.current) return;
     hasSentPrefillRef.current = true;
     submitMessage(prefill);
     router.replace(pathname, { scroll: false });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [historySettled]);
 
   function submitMessage(text: string) {
     const trimmed = text.trim();
@@ -43,11 +82,12 @@ export default function ChatPage() {
     setInput('');
 
     sendMessage(
-      { message: trimmed, conversationId },
+      { message: trimmed, conversationId: conversationId ?? undefined },
       {
         onSuccess(data) {
           console.log(data);
           setConversationId(data.conversationId);
+          sessionStorage.setItem(CONVERSATION_ID_KEY, data.conversationId);
           setMessages((prev) => [...prev, { role: 'assistant', content: data.message }]);
           setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
         },
