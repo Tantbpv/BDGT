@@ -21,7 +21,7 @@ export class OllamaProvider extends LlmProvider {
   constructor(private readonly config: ConfigService<EnvConfig, true>) {
     super();
     this.client = new Ollama({ host: config.get('OLLAMA_HOST') });
-    this.defaultModel = config.get('LLM_MODEL') ?? 'llama3.2';
+    this.defaultModel = config.get('LLM_MODEL') ?? 'qwen3:8';
   }
 
   protected async doComplete(req: LlmCompletionRequest): Promise<LlmCompletionResponse> {
@@ -30,6 +30,7 @@ export class OllamaProvider extends LlmProvider {
       messages: this.toOllamaMessages(req.messages),
       ...(req.tools && { tools: this.toOllamaTools(req.tools) }),
       options: {
+        num_ctx: 4096,
         ...(req.temperature !== undefined && { temperature: req.temperature }),
         ...(req.max_tokens !== undefined && { num_predict: req.max_tokens }),
       },

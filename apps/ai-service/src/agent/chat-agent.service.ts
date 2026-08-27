@@ -87,7 +87,10 @@ export class ChatAgentService {
       }
 
       if (res.finish_reason === 'tool_calls' && res.tool_calls?.length) {
-        this.logger.debug({ turn: turn + 1, count: res.tool_calls.length }, 'Tool calls requested');
+        this.logger.debug(
+          { turn: turn + 1, tools: res.tool_calls },
+          'Tool calls requested',
+        );
 
         messages.push({
           role: 'assistant',

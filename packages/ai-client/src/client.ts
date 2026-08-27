@@ -1,4 +1,4 @@
-import { type ChatRequest, type ChatResponse } from '@repo/contracts/ai';
+import { type ChatRequest, type ChatResponse, type ConversationHistoryResponse } from '@repo/contracts/ai';
 import { type ApiError, type ApiResponse } from '@repo/contracts/common';
 
 import { AIClientError } from './errors';
@@ -18,6 +18,14 @@ export class AIClient {
 
   async health(): Promise<{ service: string; status: string; timestamp: string }> {
     return this.request('/api/health', { method: 'GET' });
+  }
+
+  async getConversationHistory(conversationId: string, userId: string): Promise<ConversationHistoryResponse> {
+    const response = await this.request<ApiResponse<ConversationHistoryResponse>>(
+      `/api/conversations/${conversationId}/messages?userId=${encodeURIComponent(userId)}`,
+      { method: 'GET' },
+    );
+    return response.data;
   }
 
   async chat(request: ChatRequest): Promise<ChatResponse> {

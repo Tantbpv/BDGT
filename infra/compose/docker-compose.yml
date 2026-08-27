@@ -16,24 +16,26 @@ services:
       timeout: 5s
       retries: 5
 
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    container_name: bdgt_pgadmin
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@bdgt.dev
-      PGADMIN_DEFAULT_PASSWORD: admin
-    ports:
-      - "5050:80"
-    depends_on:
-      - postgres
-
   ollama:
+    # For NVIDIA GPU: uncomment the deploy block below and set NVIDIA_VISIBLE_DEVICES
+    # image: ollama/ollama:latest  # keep for NVIDIA
+    # For AMD GPU: change image to ollama/ollama:rocm
     image: ollama/ollama:latest
     container_name: bdgt_ollama
     ports:
       - "666:11434"
     volumes:
       - ollama_data:/root/.ollama
+    environment:
+      - OLLAMA_FLASH_ATTENTION=1
+      - OLLAMA_KEEP_ALIVE=-1
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
     restart: unless-stopped
 
 volumes:
