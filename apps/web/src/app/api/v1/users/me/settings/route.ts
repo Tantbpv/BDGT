@@ -1,27 +1,10 @@
 import type { ApiError, ApiResponse } from '@repo/contracts/common';
-import { UpdateUserSettingSchema,type UserSetting } from '@repo/contracts/users';
-import { prisma } from '@repo/database';
+import { UpdateUserSettingSchema, type UserSetting } from '@repo/contracts/users';
 import { type NextRequest, NextResponse } from 'next/server';
 
 import { getAuthUser } from '@/shared/lib/auth-helpers';
-
-function toUserSetting(s: {
-  id: string;
-  userId: string;
-  currency: string;
-  activeAccountId: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-}): UserSetting {
-  return {
-    id: s.id,
-    userId: s.userId,
-    currency: s.currency as UserSetting['currency'],
-    activeAccountId: s.activeAccountId,
-    createdAt: s.createdAt.toISOString(),
-    updatedAt: s.updatedAt.toISOString(),
-  };
-}
+import { handleClientError } from '@/shared/lib/handle-client-error';
+import { usersServiceClient } from '@/shared/lib/users-service-client';
 
 export async function GET(
   request: NextRequest,
@@ -29,17 +12,12 @@ export async function GET(
   const auth = await getAuthUser(request);
   if (!auth.ok) return auth.response;
 
-  let settings = await prisma.userSetting.findUnique({
-    where: { userId: auth.payload.sub },
-  });
-
-  if (!settings) {
-    settings = await prisma.userSetting.create({
-      data: { userId: auth.payload.sub, currency: 'EUR' },
-    });
+  try {
+    const settings = await usersServiceClient.getSettings(auth.payload.sub);
+    return NextResponse.json({ data: settings });
+  } catch (error) {
+    return handleClientError(error);
   }
-
-  return NextResponse.json({ data: toUserSetting(settings) });
 }
 
 export async function PATCH(
@@ -64,11 +42,10 @@ export async function PATCH(
     );
   }
 
-  const settings = await prisma.userSetting.upsert({
-    where: { userId: auth.payload.sub },
-    create: { userId: auth.payload.sub, ...parsed.data },
-    update: parsed.data,
-  });
-
-  return NextResponse.json({ data: toUserSetting(settings) });
+  try {
+    const settings = await usersServiceClient.updateSettings(auth.payload.sub, parsed.data);
+    return NextResponse.json({ data: settings });
+  } catch (error) {
+    return handleClientError(error);
+  }
 }

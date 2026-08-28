@@ -2,7 +2,7 @@
 
 import type { ChatMessage } from '@repo/contracts/ai';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 
 import {
   CONVERSATION_ID_KEY,
@@ -10,7 +10,7 @@ import {
   useSendMessage,
 } from '@/features/chat/hooks/useChat';
 
-export default function ChatPage() {
+function ChatContent() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [conversationId, setConversationId] = useState<string | null | undefined>(undefined);
@@ -167,5 +167,13 @@ export default function ChatPage() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function ChatPage() {
+  return (
+    <Suspense>
+      <ChatContent />
+    </Suspense>
   );
 }

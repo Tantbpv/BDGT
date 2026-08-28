@@ -1,6 +1,7 @@
 import { ACCESS_TOKEN_COOKIE, REFRESH_TOKEN_COOKIE } from '@repo/auth';
-import { prisma } from '@repo/database';
 import { type NextRequest, NextResponse } from 'next/server';
+
+import { usersServiceClient } from '@/shared/lib/users-service-client';
 
 export async function DELETE(request: NextRequest): Promise<NextResponse> {
   const refreshToken = request.cookies.get(REFRESH_TOKEN_COOKIE)?.value;
@@ -10,7 +11,8 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
   response.cookies.delete(REFRESH_TOKEN_COOKIE);
 
   if (refreshToken) {
-    await prisma.refreshToken.deleteMany({ where: { token: refreshToken } });
+    // Fire-and-forget: always clear cookies regardless of service availability
+    await usersServiceClient.logout(refreshToken).catch(() => undefined);
   }
 
   return response;

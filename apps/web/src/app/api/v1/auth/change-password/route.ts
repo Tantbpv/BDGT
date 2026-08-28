@@ -1,10 +1,10 @@
 import { ChangePasswordRequestSchema } from '@repo/contracts/auth';
 import type { ApiError, ApiResponse } from '@repo/contracts/common';
-import { prisma } from '@repo/database';
-import bcrypt from 'bcryptjs';
 import { type NextRequest, NextResponse } from 'next/server';
 
 import { getAuthUser } from '@/shared/lib/auth-helpers';
+import { handleClientError } from '@/shared/lib/handle-client-error';
+import { usersServiceClient } from '@/shared/lib/users-service-client';
 
 export async function POST(
   request: NextRequest,
@@ -24,26 +24,10 @@ export async function POST(
     );
   }
 
-  const user = await prisma.user.findUnique({ where: { id: authResult.payload.sub } });
-  if (!user) {
-    return NextResponse.json(
-      { error: { code: 'NOT_FOUND', message: 'User not found' } },
-      { status: 404 },
-    );
+  try {
+    await usersServiceClient.changePassword(authResult.payload.sub, parsed.data);
+    return NextResponse.json({ data: null }, { status: 200 });
+  } catch (error) {
+    return handleClientError(error);
   }
-
-  const passwordMatch = await bcrypt.compare(parsed.data.currentPassword, user.passwordHash);
-  if (!passwordMatch) {
-    return NextResponse.json(
-      { error: { code: 'INVALID_CURRENT_PASSWORD', message: 'Current password is incorrect' } },
-      { status: 400 },
-    );
-  }
-
-  const newHash = await bcrypt.hash(parsed.data.newPassword, 12);
-
-  await prisma.user.update({ where: { id: user.id }, data: { passwordHash: newHash } });
-  await prisma.refreshToken.deleteMany({ where: { userId: user.id } });
-
-  return NextResponse.json({ data: null }, { status: 200 });
 }

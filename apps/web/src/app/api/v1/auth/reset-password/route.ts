@@ -1,8 +1,9 @@
 import { ResetPasswordRequestSchema } from '@repo/contracts/auth';
 import type { ApiError, ApiResponse } from '@repo/contracts/common';
-import { prisma } from '@repo/database';
-import bcrypt from 'bcryptjs';
 import { type NextRequest, NextResponse } from 'next/server';
+
+import { handleClientError } from '@/shared/lib/handle-client-error';
+import { usersServiceClient } from '@/shared/lib/users-service-client';
 
 export async function POST(
   request: NextRequest,
@@ -17,29 +18,10 @@ export async function POST(
     );
   }
 
-  const record = await prisma.passwordResetToken.findUnique({ where: { token: parsed.data.token } });
-  if (!record || record.usedAt !== null || record.expiresAt < new Date()) {
-    return NextResponse.json(
-      { error: { code: 'INVALID_TOKEN', message: 'Invalid or expired reset token' } },
-      { status: 400 },
-    );
+  try {
+    await usersServiceClient.resetPassword(parsed.data);
+    return NextResponse.json({ data: null }, { status: 200 });
+  } catch (error) {
+    return handleClientError(error);
   }
-
-  const user = await prisma.user.findUnique({ where: { id: record.userId } });
-  if (!user) {
-    return NextResponse.json(
-      { error: { code: 'INVALID_TOKEN', message: 'Invalid or expired reset token' } },
-      { status: 400 },
-    );
-  }
-
-  const passwordHash = await bcrypt.hash(parsed.data.newPassword, 12);
-
-  await prisma.$transaction(async (tx) => {
-    await tx.user.update({ where: { id: user.id }, data: { passwordHash } });
-    await tx.passwordResetToken.update({ where: { id: record.id }, data: { usedAt: new Date() } });
-    await tx.refreshToken.deleteMany({ where: { userId: user.id } });
-  });
-
-  return NextResponse.json({ data: null }, { status: 200 });
 }
