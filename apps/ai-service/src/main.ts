@@ -2,10 +2,14 @@ import 'reflect-metadata';
 
 import { NestFactory } from '@nestjs/core';
 import { Logger } from 'nestjs-pino';
+import { Agent, setGlobalDispatcher } from 'undici';
 
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './filters/all-exceptions.filter';
 import { HttpExceptionFilter } from './filters/http-exception.filter';
+
+// Edge case: Ollama api request timeout error. Fix: increase timeout up to 10min globally
+setGlobalDispatcher(new Agent({ headersTimeout: 10 * 60 * 1000, bodyTimeout: 10 * 60 * 1000 }));
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
