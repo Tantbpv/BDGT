@@ -1,8 +1,9 @@
 import { ForgotPasswordRequestSchema } from '@repo/contracts/auth';
 import type { ApiError, ApiResponse } from '@repo/contracts/common';
-import { prisma } from '@repo/database';
-import { randomBytes } from 'crypto';
 import { type NextRequest, NextResponse } from 'next/server';
+
+import { handleClientError } from '@/shared/lib/handle-client-error';
+import { usersServiceClient } from '@/shared/lib/users-service-client';
 
 export async function POST(
   request: NextRequest,
@@ -17,18 +18,15 @@ export async function POST(
     );
   }
 
-  const user = await prisma.user.findUnique({ where: { email: parsed.data.email } });
+  try {
+    const result = await usersServiceClient.forgotPassword(parsed.data);
 
-  if (user) {
-    const token = randomBytes(32).toString('hex');
-    const expiresAt = new Date(Date.now() + 3_600_000);
-
-    await prisma.passwordResetToken.create({ data: { token, userId: user.id, expiresAt } });
-
-    if (process.env['NODE_ENV'] === 'development') {
-      return NextResponse.json({ data: { resetToken: token } }, { status: 200 });
+    if (result.token) {
+      return NextResponse.json({ data: { resetToken: result.token } }, { status: 200 });
     }
-  }
 
-  return NextResponse.json({ data: null }, { status: 200 });
+    return NextResponse.json({ data: null }, { status: 200 });
+  } catch (error) {
+    return handleClientError(error);
+  }
 }

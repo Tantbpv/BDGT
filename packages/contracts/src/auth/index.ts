@@ -57,3 +57,11 @@ export const ResetPasswordRequestSchema = z.object({
 });
 
 export type ResetPasswordRequest = z.infer<typeof ResetPasswordRequestSchema>;
+
+export type AuthTokensResponse = {
+  user: { id: string; email: string; name: string | null };
+  accessToken: string;
+  accessExpiresAt: string;
+  refreshToken: string;
+  refreshExpiresAt: string;
+};
