@@ -30,7 +30,7 @@ export class OllamaProvider extends LlmProvider {
       messages: this.toOllamaMessages(req.messages),
       ...(req.tools && { tools: this.toOllamaTools(req.tools) }),
       options: {
-        num_ctx: 4096,
+        num_ctx: 4096*2,
         ...(req.temperature !== undefined && { temperature: req.temperature }),
         ...(req.max_tokens !== undefined && { num_predict: req.max_tokens }),
       },
