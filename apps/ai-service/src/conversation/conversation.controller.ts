@@ -1,12 +1,11 @@
 import { Controller, ForbiddenException, Get, Param, Query, UseGuards, UseInterceptors } from '@nestjs/common';
 import type { ChatMessage, ConversationHistoryResponse } from '@repo/contracts/ai';
 import type { ApiResponse } from '@repo/contracts/common';
+import { LoggingInterceptor , ZodValidationPipe } from '@repo/nestjs-shared';
 import { z } from 'zod';
 
 import { ApiKeyGuard } from '../guards/api-key.guard';
-import { LoggingInterceptor } from '../interceptors/logging.interceptor';
 import { MessageService } from '../message/message.service';
-import { ZodValidationPipe } from '../pipes/zod-validation.pipe';
 import { ConversationService } from './conversation.service';
 
 const GetHistoryQuerySchema = z.object({ userId: z.string().cuid() });

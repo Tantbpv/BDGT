@@ -1,11 +1,10 @@
 import 'reflect-metadata';
 
 import { NestFactory } from '@nestjs/core';
+import { AllExceptionsFilter, HttpExceptionFilter } from '@repo/nestjs-shared';
 import { Logger } from 'nestjs-pino';
 
 import { AppModule } from './app.module';
-import { AllExceptionsFilter } from './filters/all-exceptions.filter';
-import { HttpExceptionFilter } from './filters/http-exception.filter';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });

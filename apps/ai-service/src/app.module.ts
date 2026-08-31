@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { DatabaseModule } from '@repo/nestjs-shared';
 import { LoggerModule } from 'nestjs-pino';
 
 import { ChatModule } from './chat/chat.module';
-import { ConversationModule } from './conversation/conversation.module';
 import { envSchema } from './config/env.schema';
-import { DatabaseModule } from './database/database.module';
+import { ConversationModule } from './conversation/conversation.module';
 import { HealthModule } from './health/health.module';
 
 @Module({

@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
+import { LoggingInterceptor } from '@repo/nestjs-shared';
 
 import { ApiKeyGuard } from '../guards/api-key.guard';
-import { LoggingInterceptor } from '../interceptors/logging.interceptor';
 import { MessageModule } from '../message/message.module';
 import { ConversationController } from './conversation.controller';
 import { ConversationService } from './conversation.service';

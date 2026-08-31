@@ -2,11 +2,10 @@ import { Body, Controller, Post, UseGuards, UseInterceptors } from '@nestjs/comm
 import type { ChatRequest, ChatResponse } from '@repo/contracts/ai';
 import { ChatRequestSchema } from '@repo/contracts/ai';
 import type { ApiResponse } from '@repo/contracts/common';
+import { LoggingInterceptor , ZodValidationPipe } from '@repo/nestjs-shared';
 
 import { ChatAgentService } from '../agent/chat-agent.service';
 import { ApiKeyGuard } from '../guards/api-key.guard';
-import { LoggingInterceptor } from '../interceptors/logging.interceptor';
-import { ZodValidationPipe } from '../pipes/zod-validation.pipe';
 
 @Controller('chat')
 @UseGuards(ApiKeyGuard)

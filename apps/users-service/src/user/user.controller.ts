@@ -8,13 +8,12 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import type { ApiResponse } from '@repo/contracts/common';
 import type { UpdateUser, UpdateUserSetting, User, UserSetting } from '@repo/contracts/users';
 import { UpdateUserSchema, UpdateUserSettingSchema } from '@repo/contracts/users';
-import type { ApiResponse } from '@repo/contracts/common';
+import { LoggingInterceptor , ZodValidationPipe } from '@repo/nestjs-shared';
 
 import { ApiKeyGuard } from '../guards/api-key.guard';
-import { LoggingInterceptor } from '../interceptors/logging.interceptor';
-import { ZodValidationPipe } from '../pipes/zod-validation.pipe';
 import { UserService } from './user.service';
 
 @Controller('users')

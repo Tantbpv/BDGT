@@ -30,6 +30,10 @@
       "import": { "types": "./src/common/index.ts", "default": "./dist/common.js" },
       "require": { "types": "./dist/common.d.cts", "default": "./dist/common.cjs" }
     },
+    "./statistics": {
+      "import": { "types": "./src/statistics/index.ts", "default": "./dist/statistics.js" },
+      "require": { "types": "./dist/statistics.d.cts", "default": "./dist/statistics.cjs" }
+    },
     "./transactions": {
       "import": { "types": "./src/transactions/index.ts", "default": "./dist/transactions.js" },
       "require": { "types": "./dist/transactions.d.cts", "default": "./dist/transactions.cjs" }

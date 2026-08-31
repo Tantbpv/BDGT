@@ -1,40 +1,12 @@
-import type { Prisma } from '@prisma/client';
-import type { ApiError,ApiResponse } from '@repo/contracts/common';
-import { type Transaction,UpdateTransactionSchema } from '@repo/contracts/transactions';
-import { prisma } from '@repo/database';
+import { BudgetClientError } from '@repo/budget-client';
+import type { ApiError, ApiResponse } from '@repo/contracts/common';
+import { type Transaction, UpdateTransactionSchema } from '@repo/contracts/transactions';
 import { type NextRequest, NextResponse } from 'next/server';
 
 import { getAuthUser } from '@/shared/lib/auth-helpers';
+import { budgetServiceClient } from '@/shared/lib/budget-service-client';
 
 type RouteParams = { params: Promise<{ id: string }> };
-
-function toTransaction(t: {
-  id: string;
-  amount: Prisma.Decimal;
-  description: string;
-  type: 'INCOME' | 'EXPENSE';
-  date: Date;
-  accountId: string;
-  categories: { id: string }[];
-  createdById: string;
-  createdBy: { name: string | null; email: string };
-  createdAt: Date;
-  updatedAt: Date;
-}): Transaction {
-  return {
-    id: t.id,
-    amount: t.amount.toString(),
-    description: t.description,
-    type: t.type,
-    date: t.date.toISOString(),
-    accountId: t.accountId,
-    categoryIds: t.categories.map((c) => c.id),
-    createdById: t.createdById,
-    createdByName: t.createdBy.name ?? t.createdBy.email,
-    createdAt: t.createdAt.toISOString(),
-    updatedAt: t.updatedAt.toISOString(),
-  };
-}
 
 export async function GET(
   request: NextRequest,
@@ -45,34 +17,27 @@ export async function GET(
 
   const { id } = await params;
 
-  const transaction = await prisma.transaction.findUnique({
-    where: { id },
-    include: { categories: { select: { id: true } }, createdBy: { select: { name: true, email: true } } },
-  });
-  if (!transaction) {
-    return NextResponse.json(
-      { error: { code: 'NOT_FOUND', message: 'Transaction not found' } },
-      { status: 404 },
-    );
+  try {
+    const transaction = await budgetServiceClient.getTransaction(auth.payload.sub, id);
+    return NextResponse.json({ data: transaction });
+  } catch (err) {
+    if (err instanceof BudgetClientError) {
+      return NextResponse.json(
+        { error: { code: 'BUDGET_SERVICE_ERROR', message: err.message } },
+        { status: err.statusCode },
+      );
+    }
+    throw err;
   }
-
-  const membership = await prisma.userAccount.findFirst({
-    where: { accountId: transaction.accountId, userId: auth.payload.sub },
-  });
-  if (!membership) {
-    return NextResponse.json(
-      { error: { code: 'NOT_FOUND', message: 'Transaction not found' } },
-      { status: 404 },
-    );
-  }
-
-  return NextResponse.json({ data: toTransaction(transaction) });
 }
 
 export async function PUT(
   request: NextRequest,
   { params }: RouteParams,
 ): Promise<NextResponse<ApiResponse<Transaction> | ApiError>> {
+  const auth = await getAuthUser(request);
+  if (!auth.ok) return auth.response;
+
   const { id } = await params;
   const body = await request.json().catch(() => null);
   const parsed = UpdateTransactionSchema.safeParse(body);
@@ -84,12 +49,18 @@ export async function PUT(
     );
   }
 
-  // TODO: verify auth, update transaction
-  void id;
-  return NextResponse.json(
-    { error: { code: 'NOT_IMPLEMENTED', message: 'Not implemented' } },
-    { status: 501 },
-  );
+  try {
+    const transaction = await budgetServiceClient.updateTransaction(auth.payload.sub, id, parsed.data);
+    return NextResponse.json({ data: transaction });
+  } catch (err) {
+    if (err instanceof BudgetClientError) {
+      return NextResponse.json(
+        { error: { code: 'BUDGET_SERVICE_ERROR', message: err.message } },
+        { status: err.statusCode },
+      );
+    }
+    throw err;
+  }
 }
 
 export async function DELETE(
@@ -101,25 +72,16 @@ export async function DELETE(
 
   const { id } = await params;
 
-  const transaction = await prisma.transaction.findUnique({ where: { id } });
-  if (!transaction) {
-    return NextResponse.json(
-      { error: { code: 'NOT_FOUND', message: 'Transaction not found' } },
-      { status: 404 },
-    );
+  try {
+    await budgetServiceClient.deleteTransaction(auth.payload.sub, id);
+    return NextResponse.json({ data: null });
+  } catch (err) {
+    if (err instanceof BudgetClientError) {
+      return NextResponse.json(
+        { error: { code: 'BUDGET_SERVICE_ERROR', message: err.message } },
+        { status: err.statusCode },
+      );
+    }
+    throw err;
   }
-
-  const membership = await prisma.userAccount.findFirst({
-    where: { accountId: transaction.accountId, userId: auth.payload.sub },
-  });
-  if (!membership) {
-    return NextResponse.json(
-      { error: { code: 'NOT_FOUND', message: 'Transaction not found' } },
-      { status: 404 },
-    );
-  }
-
-  await prisma.transaction.delete({ where: { id } });
-
-  return NextResponse.json({ data: null });
 }

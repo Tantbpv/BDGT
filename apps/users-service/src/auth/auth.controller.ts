@@ -23,10 +23,9 @@ import {
   ResetPasswordRequestSchema,
 } from '@repo/contracts/auth';
 import type { ApiResponse } from '@repo/contracts/common';
+import { LoggingInterceptor , ZodValidationPipe } from '@repo/nestjs-shared';
 
 import { ApiKeyGuard } from '../guards/api-key.guard';
-import { LoggingInterceptor } from '../interceptors/logging.interceptor';
-import { ZodValidationPipe } from '../pipes/zod-validation.pipe';
 import { AuthService } from './auth.service';
 
 @Controller('auth')

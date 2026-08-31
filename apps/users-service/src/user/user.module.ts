@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
+import { LoggingInterceptor } from '@repo/nestjs-shared';
 
 import { ApiKeyGuard } from '../guards/api-key.guard';
-import { LoggingInterceptor } from '../interceptors/logging.interceptor';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
 

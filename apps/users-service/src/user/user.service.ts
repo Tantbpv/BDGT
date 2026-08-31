@@ -1,7 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import type { UpdateUser, UpdateUserSetting, User, UserSetting } from '@repo/contracts/users';
-
-import { PrismaService } from '../database/prisma.service';
+import { PrismaService } from '@repo/nestjs-shared';
 
 @Injectable()
 export class UserService {

@@ -34,7 +34,7 @@ function ChatContent() {
   useEffect(() => {
     const stored = sessionStorage.getItem(CONVERSATION_ID_KEY);
     setConversationId(stored ?? null);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, []);
 
   // React to history query result

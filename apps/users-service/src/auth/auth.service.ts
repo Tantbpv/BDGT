@@ -15,11 +15,11 @@ import type {
   RegisterRequest,
   ResetPasswordRequest,
 } from '@repo/contracts/auth';
+import { PrismaService } from '@repo/nestjs-shared';
 import bcrypt from 'bcryptjs';
 import { randomBytes } from 'crypto';
 
 import type { EnvConfig } from '../config/env.schema';
-import { PrismaService } from '../database/prisma.service';
 
 // Pre-hashed sentinel for constant-time comparison on user-not-found,
 // preventing timing-based email enumeration.
