@@ -1,29 +1,43 @@
+import { BudgetClientError } from '@repo/budget-client';
 import { type Category, UpdateCategorySchema } from '@repo/contracts/categories';
 import type { ApiError, ApiResponse } from '@repo/contracts/common';
-import { prisma } from '@repo/database';
 import { type NextRequest, NextResponse } from 'next/server';
 
 import { getAuthUser } from '@/shared/lib/auth-helpers';
+import { budgetServiceClient } from '@/shared/lib/budget-service-client';
 
 type RouteParams = { params: Promise<{ id: string }> };
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: RouteParams,
 ): Promise<NextResponse<ApiResponse<Category> | ApiError>> {
+  const auth = await getAuthUser(request);
+  if (!auth.ok) return auth.response;
+
   const { id } = await params;
-  void id;
-  // TODO: verify auth, fetch category by id
-  return NextResponse.json(
-    { error: { code: 'NOT_IMPLEMENTED', message: 'Not implemented' } },
-    { status: 501 },
-  );
+
+  try {
+    const category = await budgetServiceClient.getCategory(auth.payload.sub, id);
+    return NextResponse.json({ data: category });
+  } catch (err) {
+    if (err instanceof BudgetClientError) {
+      return NextResponse.json(
+        { error: { code: 'BUDGET_SERVICE_ERROR', message: err.message } },
+        { status: err.statusCode },
+      );
+    }
+    throw err;
+  }
 }
 
 export async function PUT(
   request: NextRequest,
   { params }: RouteParams,
 ): Promise<NextResponse<ApiResponse<Category> | ApiError>> {
+  const auth = await getAuthUser(request);
+  if (!auth.ok) return auth.response;
+
   const { id } = await params;
   const body = await request.json().catch(() => null);
   const parsed = UpdateCategorySchema.safeParse(body);
@@ -35,12 +49,18 @@ export async function PUT(
     );
   }
 
-  void id;
-  // TODO: verify auth, update category
-  return NextResponse.json(
-    { error: { code: 'NOT_IMPLEMENTED', message: 'Not implemented' } },
-    { status: 501 },
-  );
+  try {
+    const category = await budgetServiceClient.updateCategory(auth.payload.sub, id, parsed.data);
+    return NextResponse.json({ data: category });
+  } catch (err) {
+    if (err instanceof BudgetClientError) {
+      return NextResponse.json(
+        { error: { code: 'BUDGET_SERVICE_ERROR', message: err.message } },
+        { status: err.statusCode },
+      );
+    }
+    throw err;
+  }
 }
 
 export async function DELETE(
@@ -52,25 +72,16 @@ export async function DELETE(
 
   const { id } = await params;
 
-  const category = await prisma.category.findUnique({ where: { id } });
-  if (!category) {
-    return NextResponse.json(
-      { error: { code: 'NOT_FOUND', message: 'Category not found' } },
-      { status: 404 },
-    );
+  try {
+    await budgetServiceClient.deleteCategory(auth.payload.sub, id);
+    return NextResponse.json({ data: null });
+  } catch (err) {
+    if (err instanceof BudgetClientError) {
+      return NextResponse.json(
+        { error: { code: 'BUDGET_SERVICE_ERROR', message: err.message } },
+        { status: err.statusCode },
+      );
+    }
+    throw err;
   }
-
-  const membership = await prisma.userAccount.findFirst({
-    where: { accountId: category.accountId, userId: auth.payload.sub },
-  });
-  if (!membership) {
-    return NextResponse.json(
-      { error: { code: 'NOT_FOUND', message: 'Category not found' } },
-      { status: 404 },
-    );
-  }
-
-  await prisma.category.delete({ where: { id } });
-
-  return NextResponse.json({ data: null });
 }

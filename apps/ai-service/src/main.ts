@@ -1,12 +1,11 @@
 import 'reflect-metadata';
 
 import { NestFactory } from '@nestjs/core';
+import { AllExceptionsFilter, HttpExceptionFilter } from '@repo/nestjs-shared';
 import { Logger } from 'nestjs-pino';
 import { Agent, setGlobalDispatcher } from 'undici';
 
 import { AppModule } from './app.module';
-import { AllExceptionsFilter } from './filters/all-exceptions.filter';
-import { HttpExceptionFilter } from './filters/http-exception.filter';
 
 // Edge case: Ollama api request timeout error. Fix: increase timeout up to 10min globally
 setGlobalDispatcher(new Agent({ headersTimeout: 10 * 60 * 1000, bodyTimeout: 10 * 60 * 1000 }));

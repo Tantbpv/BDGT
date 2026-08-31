@@ -11,8 +11,11 @@
     "JWT_REFRESH_EXPIRES_IN",
     "LOG_LEVEL",
     "AI_SERVICE_KEY",
+    "AI_SERVICE_URL",
     "USERS_SERVICE_KEY",
-    "USERS_SERVICE_URL"
+    "USERS_SERVICE_URL",
+    "BUDGET_SERVICE_KEY",
+    "BUDGET_SERVICE_URL"
   ],
   "tasks": {
     "build": {

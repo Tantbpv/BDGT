@@ -8,6 +8,7 @@ export default defineConfig({
     auth: 'src/auth/index.ts',
     categories: 'src/categories/index.ts',
     common: 'src/common/index.ts',
+    statistics: 'src/statistics/index.ts',
     transactions: 'src/transactions/index.ts',
     users: 'src/users/index.ts',
   },

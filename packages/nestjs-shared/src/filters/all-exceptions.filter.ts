@@ -1,4 +1,4 @@
-import { ArgumentsHost, Catch, ExceptionFilter, Logger } from '@nestjs/common';
+import { type ArgumentsHost, Catch, type ExceptionFilter, Logger } from '@nestjs/common';
 import type { Response } from 'express';
 
 // Catches everything that HttpExceptionFilter does not — unhandled errors, thrown strings, etc.

@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { DatabaseModule } from '@repo/nestjs-shared';
 import { LoggerModule } from 'nestjs-pino';
 
 import { AuthModule } from './auth/auth.module';
 import { envSchema } from './config/env.schema';
-import { DatabaseModule } from './database/database.module';
 import { HealthModule } from './health/health.module';
 import { UserModule } from './user/user.module';
 

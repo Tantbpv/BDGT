@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { PrismaService } from '@repo/nestjs-shared';
 
-import { PrismaService } from '../../../database/prisma.service';
 import type { LlmTool } from '../../../llm/types';
 import type { ToolContext, ToolDefinition } from '../tool.interface';
 

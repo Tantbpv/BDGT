@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
+import { LoggingInterceptor } from '@repo/nestjs-shared';
 
 import { AgentModule } from '../agent/agent.module';
 import { ApiKeyGuard } from '../guards/api-key.guard';
-import { LoggingInterceptor } from '../interceptors/logging.interceptor';
 import { ChatController } from './chat.controller';
 
 @Module({
